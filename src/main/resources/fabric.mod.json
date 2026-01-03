@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "scrubians",
+  "version": "${version}",
+  "name": "Scrubians",
+  "description": "A Server-Side mod made to replicate the Citizens Plugin on Paper/Spigot but using Manaquins",
+  "authors": [],
+  "contact": {},
+  "license": "AGPL-3.0",
+  "icon": "assets/scrubians/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "ca.techgarage.scrubians.Scrubians"
+    ]
+  },
+  "mixins": [
+    "scrubians.mixins.json",
+    {
+      "config": "scrubians.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "cloth-config": ">=17.0.140"
+
+  }
+}
