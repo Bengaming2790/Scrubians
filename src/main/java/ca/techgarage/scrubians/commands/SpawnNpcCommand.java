@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.commands;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcEntityFactory;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -17,8 +18,7 @@ public class SpawnNpcCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .requires(source -> source.hasPermissionLevel(2)) // Requires OP level 2
-                        .then(CommandManager.literal("create")
+                        .then(CommandManager.literal("create").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.create")) // Requires OP level 2
 
                             // Just name (uses default Steve skin, not attackable)
                             .then(CommandManager.argument("name", StringArgumentType.string())

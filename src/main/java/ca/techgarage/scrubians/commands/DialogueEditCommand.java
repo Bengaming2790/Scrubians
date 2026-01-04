@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.commands;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.NpcRegistry.DialogueData;
 import com.mojang.brigadier.CommandDispatcher;
@@ -14,7 +15,7 @@ public class DialogueEditCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                CommandManager.literal("npc").requires(source -> source.hasPermissionLevel(2)).then(CommandManager.literal("edit")
+                CommandManager.literal("npc").then(CommandManager.literal("edit").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.edit"))
                             .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0))
                                     // /dialogueedit <id> addpage <text>
                                     .then(CommandManager.literal("addpage")

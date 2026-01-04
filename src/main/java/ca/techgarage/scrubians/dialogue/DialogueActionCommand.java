@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.dialogue;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.dialogue.DialogueSessionManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -15,7 +16,7 @@ import net.minecraft.text.Text;
 public class DialogueActionCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("dialogueaction").then(CommandManager.argument("action", StringArgumentType.greedyString()).executes(DialogueActionCommand::handleAction)));
+        dispatcher.register(CommandManager.literal("dialogueaction").requires(source -> ScrubiansPermissions.has(source, "scrubians.dialogue")).then(CommandManager.argument("action", StringArgumentType.greedyString()).executes(DialogueActionCommand::handleAction)));
     }
 
     private static int handleAction(CommandContext<ServerCommandSource> ctx) {

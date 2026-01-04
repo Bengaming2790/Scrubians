@@ -1,23 +1,23 @@
 package ca.techgarage.scrubians.commands;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.NpcRegistry.NpcData;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 
-public class NPCListCommand {
+public class NpcListCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .requires(source -> source.hasPermissionLevel(2)).then(CommandManager.literal("list")
-                        .executes(NPCListCommand::execute))
+                       .then(CommandManager.literal("list").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.list"))
+                        .executes(NpcListCommand::execute))
         );
     }
 

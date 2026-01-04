@@ -1,6 +1,6 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.npcs.NpcRegistry;
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.entity.Entity;
@@ -9,13 +9,13 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 
-public class NPCKillInvalidCommand {
+public class NpcKillInvalidCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 net.minecraft.server.command.CommandManager.literal("npc")
                         .then(net.minecraft.server.command.CommandManager.literal("killInvalid")
-                                .requires(src -> src.hasPermissionLevel(2))
+                                .requires(src -> ScrubiansPermissions.has(src, "scrubians.npc.killinvalid"))
                                 .executes(ctx -> execute(ctx.getSource()))
                         )
         );

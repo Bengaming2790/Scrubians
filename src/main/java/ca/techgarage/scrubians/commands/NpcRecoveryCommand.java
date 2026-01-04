@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.commands;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -9,21 +10,18 @@ import net.minecraft.text.Text;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
-public class NPCRecoveryCommand {
+public class NpcRecoveryCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .requires(source -> source.hasPermissionLevel(2)).then(CommandManager.literal("recover")
+                        .then(CommandManager.literal("recover").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.recover"))
                         .then(CommandManager.literal("list")
-                                .executes(NPCRecoveryCommand::listBackups)
+                                .executes(NpcRecoveryCommand::listBackups)
                         )
                         .then(CommandManager.literal("clean")
-                                .executes(NPCRecoveryCommand::cleanStart)
+                                .executes(NpcRecoveryCommand::cleanStart)
                         ))
         );
     }

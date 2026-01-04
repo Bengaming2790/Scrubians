@@ -1,35 +1,30 @@
 package ca.techgarage.scrubians.commands;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcEntityFactory;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
-import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 
-public class NPCRespawnCommand {
+public class NpcRespawnCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc")
                         .then(CommandManager.literal("respawn")
-                        .requires(source -> source.hasPermissionLevel(2))
+                        .requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.respawn")) // Requires OP level 2
                         // /npcrespawn <npcId>
                         .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0))
-                                .executes(NPCRespawnCommand::respawnSingle)
+                                .executes(NpcRespawnCommand::respawnSingle)
                         )
                         // /npcrespawn all
                         .then(CommandManager.literal("all")
-                                .executes(NPCRespawnCommand::respawnAll)
+                                .executes(NpcRespawnCommand::respawnAll)
                         )
                         )
         );

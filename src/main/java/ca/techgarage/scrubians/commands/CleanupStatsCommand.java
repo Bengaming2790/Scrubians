@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.commands;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.events.ChunkLoadCleanup;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
@@ -17,7 +18,7 @@ public class CleanupStatsCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                CommandManager.literal("npc").requires(source -> source.hasPermissionLevel(2)).then(CommandManager.literal("cleanupstats")
+                CommandManager.literal("npc").then(CommandManager.literal("cleanupstats").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.cleanup"))
                         .executes(CleanupStatsCommand::showStats))
         );
     }

@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.commands;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.mojang.brigadier.CommandDispatcher;
@@ -11,16 +12,16 @@ import net.minecraft.text.Text;
 
 import java.util.*;
 
-public class NPCCleanupJsonCommand {
+public class NpcCleanupJsonCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .requires(source -> source.hasPermissionLevel(2))
+
                         .then(
                                 CommandManager.literal("cleanupjson")
-                                        .executes(NPCCleanupJsonCommand::cleanup)
-                        )
+                                        .executes(NpcCleanupJsonCommand::cleanup)
+                        ).requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.cleanupjson")) // Requires OP level 2
         );
     }
 

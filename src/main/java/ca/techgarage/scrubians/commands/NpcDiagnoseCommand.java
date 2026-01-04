@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.commands;
 
+import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.mojang.brigadier.CommandDispatcher;
@@ -8,21 +9,20 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NPCDiagnoseCommand {
+public class NpcDiagnoseCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .requires(source -> source.hasPermissionLevel(2))
+
                         .then(
                                 CommandManager.literal("diagnose")
-                                        .executes(NPCDiagnoseCommand::diagnose)
-                        )
+                                        .executes(NpcDiagnoseCommand::diagnose)
+                        ).requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.diagnose")) // Requires OP level 2
         );
     }
 

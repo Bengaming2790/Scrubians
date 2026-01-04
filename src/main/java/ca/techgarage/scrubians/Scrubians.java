@@ -4,7 +4,6 @@ import ca.techgarage.scrubians.commands.*;
 import ca.techgarage.scrubians.dialogue.DialogueActionCommand;
 import ca.techgarage.scrubians.events.ChunkLoadCleanup;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
-import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import ca.techgarage.scrubians.npcs.ViolentNpcRegistry;
 import ca.techgarage.scrubians.npcs.ViolentNpcTracker;
 import net.fabricmc.api.ModInitializer;
@@ -14,25 +13,21 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
-import ca.techgarage.scrubians.commands.NPCKillInvalidCommand;
+import ca.techgarage.scrubians.commands.NpcKillInvalidCommand;
 
-import static ca.techgarage.scrubians.commands.NPCRespawnCommand.respawnAllOnServerStart;
+import static ca.techgarage.scrubians.commands.NpcRespawnCommand.respawnAllOnServerStart;
 
 public class Scrubians implements ModInitializer {
 
     public static ScrubiansConfig CONFIG;
+
+    private static final boolean DEVELOPER_MODE = false;
 
     private static int cleanupTickCounter = 0;
     private static boolean hasSpawnedNPCsOnStartup = false; // Track if we've done initial spawn
@@ -41,23 +36,30 @@ public class Scrubians implements ModInitializer {
     public void onInitialize() {
 
         CommandRegistrationCallback.EVENT.register(SpawnNpcCommand::register);
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NPCListCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NPCEditCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NPCRespawnCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcListCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcEditCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcRespawnCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> DebugFileLocationCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NPCRecoveryCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NPCRemoveAllCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcRecoveryCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcRemoveAllCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> DialogueTestCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> DialogueActionCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> DialogueEditCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> DialogueActionTestCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NPCDiagnoseCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NPCCleanupJsonCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcDiagnoseCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcCleanupJsonCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CleanupStatsCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NPCKillInvalidCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register(SpawnViolentNpcCommand::register);
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcKillInvalidCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcHelpCommand.register(dispatcher));
         AutoConfig.register(ScrubiansConfig.class, GsonConfigSerializer::new);
         CONFIG = AutoConfig.getConfigHolder(ScrubiansConfig.class).getConfig();
+
+        if (DEVELOPER_MODE) {
+            System.out.println("[Scrubians] Developer mode is ON - Initializing unreleased features.");
+            CommandRegistrationCallback.EVENT.register(SpawnViolentNpcCommand::register);
+
+        }
+
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // Use current working directory (where the server is actually running)
@@ -100,7 +102,7 @@ public class Scrubians implements ModInitializer {
 
                 // Kill invalid NPCs (those without proper registry data)
                 for (ServerWorld world : server.getWorlds()) {
-                    NPCKillInvalidCommand.killInvalidNPCs(world);
+                    NpcKillInvalidCommand.killInvalidNPCs(world);
                 }
 
                 // Run chunk cleanup
