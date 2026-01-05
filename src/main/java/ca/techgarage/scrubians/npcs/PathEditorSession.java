@@ -2,6 +2,7 @@ package ca.techgarage.scrubians.npcs;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
+import ca.techgarage.scrubians.Scrubians;
 
 import java.util.*;
 
@@ -21,7 +22,7 @@ public class PathEditorSession {
         this.playerUUID = playerUUID;
         this.npcId = npcId;
         this.waypoints = new ArrayList<>();
-        this.defaultWaitTicks = 20; // 1 second default
+        this.defaultWaitTicks = Scrubians.CONFIG.defaultNPCWaitTimeInTicks;
     }
 
     /**
