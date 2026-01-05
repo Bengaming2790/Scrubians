@@ -3,7 +3,7 @@
 **Scrubians** is a **Fabric server-side NPC mod** for Minecraft that adds configurable, persistent NPCs with multiple behavior types.  
 The mod is designed to be lightweight, extensible, and fully **JSON-driven**.
 
-> **Server-side only** — no client mod required. (This mod will not work on the client-side whatsoever only use on a Dedicated Server)
+> **Server-side only** — no client mod required. (This mod will not work on the client-side whatsoever only use on a **Dedicated Server**)
 
 ---
 
