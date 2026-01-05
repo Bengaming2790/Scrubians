@@ -18,6 +18,21 @@ Scrubians introduces **three planned NPC types**:
 | **Boss NPCs** | ❌ Not Started | Powerful single NPCs with boss mechanics |
 
 ---
+## **Commands**
+| Command | Description |
+|---------|-------------|
+|**/npc help**| Displays text in-game to understand the commands|
+|**/npc create** {name} {skin} {attackable}| Creates an NPC *Both skin and Attackable are optional*|
+|**/npc edit** {id} skin | Edits the skin of the NPC on respawn |
+|**/npc edit** {id} path start | displays all of the subcommands for creating a path for the current NPC. <br> *Those will not be documented here*|
+|**/npc edit** {id} dialogue <br>{addpage/addoption/clear/view}| Used to create dialogue connected to an NPC. addpage followed by text will be what the NPC says. addoption will give choices along with actionIDs *(will be shown later)*. Clear clears all of the dialogue, and view shows you the dialogue.|
+|**/npc removeall** | Will remove all NPCs till next respawn|
+|**/npc respawn** {all/id} | Will respawn all NPCs or a specific NPC by passing an ID |
+|**/npc list** | Will provide the ID, name, and a way for the player to teleport to any NPC |
+|**/npc diagnose** | Will find all NPCs that have issues related to their JSON | 
+|**/npc debug** | Will provide the file location for the Scrubians JSON files <br> **ONLY GIVE TO PEOPLE WITH PANEL ACCESS**|
+ 
+---
 
 ## **Standard NPCs (Completed)**
 
@@ -84,7 +99,7 @@ All NPCs in Scrubians are **data-driven**.
 - **Mod Loader:** Fabric
 - **Side:** Server-side only
 - **Minecraft Version:** *1.21.10*
-
+- **LuckPerms**
 ---
 
 ## **Roadmap**
