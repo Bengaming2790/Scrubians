@@ -143,12 +143,12 @@ public class NpcEditCommand {
         source.sendFeedback(() -> Text.literal("§a§l=== Path Editor Started ==="), false);
         source.sendFeedback(() -> Text.literal("§eEditing path for NPC #" + npcId + " (" + npc.get().name + ")"), false);
         source.sendFeedback(() -> Text.literal("§7Commands:"), false);
-        source.sendFeedback(() -> Text.literal("§7  /npcedit " + npcId + " path add §f- Add waypoint at current position"), false);
-        source.sendFeedback(() -> Text.literal("§7  /npcedit " + npcId + " path add <wait> §f- Add waypoint with custom wait time"), false);
-        source.sendFeedback(() -> Text.literal("§7  /npcedit " + npcId + " path undo §f- Remove last waypoint"), false);
-        source.sendFeedback(() -> Text.literal("§7  /npcedit " + npcId + " path setwait <ticks> §f- Set default wait time"), false);
-        source.sendFeedback(() -> Text.literal("§7  /npcedit " + npcId + " path save §f- Save and finish"), false);
-        source.sendFeedback(() -> Text.literal("§7  /npcedit " + npcId + " path cancel §f- Cancel without saving"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " path add §f- Add waypoint at current position"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " path add <wait> §f- Add waypoint with custom wait time"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " path undo §f- Remove last waypoint"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " path setwait <ticks> §f- Set default wait time"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " path save §f- Save and finish"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " path cancel §f- Cancel without saving"), false);
 
         return 1;
     }
@@ -166,7 +166,7 @@ public class NpcEditCommand {
         var sessionOpt = PathEditorSession.getSession(player);
 
         if (sessionOpt.isEmpty()) {
-            source.sendError(Text.literal("§cNo active path editing session! Use /npcedit " + npcId + " path start first"));
+            source.sendError(Text.literal("§cNo active path editing session! Use /npc edit " + npcId + " path start first"));
             return 0;
         }
 
