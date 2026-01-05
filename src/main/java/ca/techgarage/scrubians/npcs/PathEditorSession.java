@@ -21,7 +21,7 @@ public class PathEditorSession {
         this.playerUUID = playerUUID;
         this.npcId = npcId;
         this.waypoints = new ArrayList<>();
-        this.defaultWaitTicks = 40; // 2 seconds default
+        this.defaultWaitTicks = 20; // 1 second default
     }
 
     /**
