@@ -96,8 +96,6 @@ All NPCs in Scrubians are **data-driven**.
 - [ ] Boss NPC framework
 - [ ] Boss health bars
 - [ ] JSON format documentation
-- [ ] Commands & admin tooling
-
 ---
 
 ## **Contributing**
