@@ -19,7 +19,7 @@ public final class NpcEntityFactory {
     /**
      * Creates a NEW player NPC with proper skin textures asynchronously.
      * This registers a NEW entry in the registry and gets a NEW ID.
-     * USE THIS FOR: /spawnnpc command
+     * USE THIS FOR: /npc create command
      */
     public static CompletableFuture<TrackingMannequinEntity> createPlayerNpc(
             ServerWorld world,
