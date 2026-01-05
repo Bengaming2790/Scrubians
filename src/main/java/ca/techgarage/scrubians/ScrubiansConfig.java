@@ -15,4 +15,8 @@ public class ScrubiansConfig implements ConfigData {
     @ConfigEntry.BoundedDiscrete(min = 8, max = 25)
     public int NPCHeadSpeed = 10;
 
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.BoundedDiscrete(min = 0, max = 40)
+    public int defaultNPCWaitTimeInTicks = 20;
+
 }
