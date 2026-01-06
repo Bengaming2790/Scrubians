@@ -45,7 +45,7 @@ public final class NpcEntityFactory {
     /**
      * Respawn an EXISTING NPC from registry data.
      * This REUSES the existing ID and does NOT create a new registry entry.
-     * USE THIS FOR: /npcrespawn command
+     * USE THIS FOR: /npc respawn {all/id} command
      */
     public static CompletableFuture<TrackingMannequinEntity> respawnNpcFromRegistry(
             ServerWorld world,

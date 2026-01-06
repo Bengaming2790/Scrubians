@@ -23,8 +23,14 @@ import ca.techgarage.scrubians.commands.NpcKillInvalidCommand;
 
 import static ca.techgarage.scrubians.commands.NpcRespawnCommand.respawnAllOnServerStart;
 
+/**
+ * The type Scrubians.
+ */
 public class Scrubians implements ModInitializer {
 
+    /**
+     * The constant CONFIG.
+     */
     public static ScrubiansConfig CONFIG;
 
     private static final boolean DEVELOPER_MODE = false;
@@ -122,9 +128,7 @@ public class Scrubians implements ModInitializer {
                 for (ServerWorld world : server.getWorlds()) {
                     ViolentNpcTracker.tick(world);
                 }
-                // REMOVED: Don't constantly respawn NPCs every 2 seconds!
-                // Only respawn on server start (handled in SERVER_STARTED event)
-                // If you need to respawn, use the /npcrespawn command
+
             }
         });
 
@@ -136,9 +140,14 @@ public class Scrubians implements ModInitializer {
             ViolentNpcTracker.clear();
         });
 
-        System.out.println("Scrubians - loaded");
+        System.out.println("[Scrubians] Loaded");
     }
 
+    /**
+     * Gets config.
+     *
+     * @return the config
+     */
     public static ScrubiansConfig getConfig() {
         return CONFIG;
     }

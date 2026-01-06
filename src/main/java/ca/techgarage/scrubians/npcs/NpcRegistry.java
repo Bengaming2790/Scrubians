@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * The type Npc registry.
+ */
 public final class NpcRegistry {
 
     private static final List<NpcData> NPC_LIST = new ArrayList<>();
@@ -24,14 +27,29 @@ public final class NpcRegistry {
     private static long lastSaveTime = 0;
     private static final long SAVE_INTERVAL_MS = 30000; // Save every 30 seconds if needed
 
+    /**
+     * The type Npc data.
+     */
     public static class NpcData {
+
         public int id;
+
         public String name;
+
         public double x, y, z;
+
         public String skin;
+
         public List<Waypoint> path;
+
         public DialogueData dialogue;
 
+        /**
+         * Instantiates a new Npc data.
+         * @param id       the id
+         * @param name     the name
+         * @param position the position
+         */
         public NpcData(int id, String name, Vec3d position) {
             this.id = id;
             this.name = name;
@@ -43,37 +61,80 @@ public final class NpcRegistry {
             this.dialogue = null;
         }
 
+        /**
+         * Gets position.
+         *
+         * @return the position
+         */
         public Vec3d getPosition() {
             return new Vec3d(x, y, z);
         }
 
+        /**
+         * Sets position.
+         *
+         * @param pos the pos
+         */
         public void setPosition(Vec3d pos) {
             this.x = pos.x;
             this.y = pos.y;
             this.z = pos.z;
         }
 
+        /**
+         * Gets path.
+         *
+         * @return the path
+         */
         public List<Waypoint> getPath() {
             return path != null ? path : new ArrayList<>();
         }
 
+        /**
+         * Sets path.
+         *
+         * @param newPath the new path
+         */
         public void setPath(List<Waypoint> newPath) {
             this.path = newPath != null ? newPath : new ArrayList<>();
         }
 
+        /**
+         * Gets dialogue.
+         *
+         * @return the dialogue
+         */
         public DialogueData getDialogue() {
             return dialogue;
         }
 
+        /**
+         * Sets dialogue.
+         *
+         * @param dialogue the dialogue
+         */
         public void setDialogue(DialogueData dialogue) {
             this.dialogue = dialogue;
         }
     }
 
+    /**
+     * The type Waypoint.
+     */
     public static class Waypoint {
+
         public double x, y, z;
+
         public int waitTicks; // How long to wait at this waypoint (in ticks, 20 = 1 second)
 
+        /**
+         * Instantiates a new Waypoint.
+         *
+         * @param x         the x
+         * @param y         the y
+         * @param z         the z
+         * @param waitTicks the wait ticks
+         */
         public Waypoint(double x, double y, double z, int waitTicks) {
             this.x = x;
             this.y = y;
@@ -81,42 +142,76 @@ public final class NpcRegistry {
             this.waitTicks = waitTicks;
         }
 
+        /**
+         * Instantiates a new Waypoint.
+         *
+         * @param pos       the pos
+         * @param waitTicks the wait ticks
+         */
         public Waypoint(Vec3d pos, int waitTicks) {
             this(pos.x, pos.y, pos.z, waitTicks);
         }
 
+        /**
+         * To vec 3 d vec 3 d.
+         *
+         * @return the vec 3 d
+         */
         public Vec3d toVec3d() {
             return new Vec3d(x, y, z);
         }
     }
 
+    /**
+     * The type Dialogue data.
+     */
     public static class DialogueData {
+        /**
+         * The Pages.
+         */
         public List<DialoguePageData> pages;
 
+        /**
+         * Instantiates a new Dialogue data.
+         */
         public DialogueData() {
             this.pages = new ArrayList<>();
         }
 
+        /**
+         * The type Dialogue page data.
+         */
         public static class DialoguePageData {
+
             public String text;
+
             public List<DialogueOptionData> options;
 
             public DialoguePageData() {
                 this.options = new ArrayList<>();
             }
-
             public DialoguePageData(String text) {
                 this.text = text;
                 this.options = new ArrayList<>();
             }
         }
 
+        /**
+         * The type Dialogue option data.
+         */
         public static class DialogueOptionData {
-            public String text;
-            public String action;
 
+            public String text;
+
+            public String action;
             public DialogueOptionData() {}
 
+            /**
+             * Instantiates a new Dialogue option data.
+             *
+             * @param text   the text
+             * @param action the action
+             */
             public DialogueOptionData(String text, String action) {
                 this.text = text;
                 this.action = action;
@@ -124,7 +219,12 @@ public final class NpcRegistry {
         }
     }
 
-    // Must be called once per world
+    /**
+     * Init.
+     *
+     * @param serverRoot the server root
+     */
+// Must be called once per world
     public static void init(File serverRoot) {
         // Use the actual server root directory (where the JAR is)
         // serverRoot from getRunDirectory() should already be the right place
@@ -206,6 +306,13 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Register npc int.
+     *
+     * @param name     the name
+     * @param position the position
+     * @return the int
+     */
     public static int registerNpc(String name, Vec3d position) {
         int id = NEXT_ID++;
         NpcData npc = new NpcData(id, name, position);
@@ -214,11 +321,22 @@ public final class NpcRegistry {
         return id;
     }
 
+    /**
+     * Remove npc by id.
+     *
+     * @param id the id
+     */
     public static void removeNpcById(int id) {
         NPC_LIST.removeIf(npc -> npc.id == id);
         forceSave();
     }
 
+    /**
+     * Change position.
+     *
+     * @param id       the id
+     * @param position the position
+     */
     public static void changePosition(int id, Vec3d position) {
         for (NpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -255,6 +373,12 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Change position and save.
+     *
+     * @param id       the id
+     * @param position the position
+     */
     public static void changePositionAndSave(int id, Vec3d position) {
         for (NpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -265,6 +389,12 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Change name.
+     *
+     * @param id      the id
+     * @param newName the new name
+     */
     public static void changeName(int id, String newName) {
         for (NpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -275,6 +405,12 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Change skin.
+     *
+     * @param id      the id
+     * @param newSkin the new skin
+     */
     public static void changeSkin(int id, String newSkin) {
         for (NpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -285,6 +421,12 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Sets path.
+     *
+     * @param id   the id
+     * @param path the path
+     */
     public static void setPath(int id, List<Waypoint> path) {
         for (NpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -295,6 +437,12 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Add waypoint.
+     *
+     * @param id       the id
+     * @param waypoint the waypoint
+     */
     public static void addWaypoint(int id, Waypoint waypoint) {
         for (NpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -305,6 +453,12 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Sets dialogue.
+     *
+     * @param id       the id
+     * @param dialogue the dialogue
+     */
     public static void setDialogue(int id, DialogueData dialogue) {
         for (NpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -315,6 +469,11 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Clear path.
+     *
+     * @param id the id
+     */
     public static void clearPath(int id) {
         for (NpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -325,14 +484,28 @@ public final class NpcRegistry {
         }
     }
 
+    /**
+     * Gets all npcs.
+     *
+     * @return the all npcs
+     */
     public static List<NpcData> getAllNpcs() {
         return List.copyOf(NPC_LIST);
     }
 
+    /**
+     * Gets npc by id.
+     *
+     * @param id the id
+     * @return the npc by id
+     */
     public static Optional<NpcData> getNpcById(int id) {
         return NPC_LIST.stream().filter(npc -> npc.id == id).findFirst();
     }
 
+    /**
+     * Clear.
+     */
     public static void clear() {
         NPC_LIST.clear();
         forceSave();

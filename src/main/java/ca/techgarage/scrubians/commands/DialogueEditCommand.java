@@ -15,8 +15,8 @@ public class DialogueEditCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                CommandManager.literal("npc").then(CommandManager.literal("edit").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.edit")).then(CommandManager.literal("dialogue")
-                            .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0))
+                CommandManager.literal("npc").then(CommandManager.literal("edit").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.edit"))
+                            .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0)).then(CommandManager.literal("dialogue")
                                     // /dialogueedit <id> addpage <text>
                                     .then(CommandManager.literal("addpage")
                                             .then(CommandManager.argument("text", StringArgumentType.greedyString())

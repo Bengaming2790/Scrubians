@@ -27,7 +27,7 @@ public class TrackingMannequinEntity extends MannequinEntity {
 
     private static final double LOOK_RANGE = (double) Scrubians.CONFIG.NPCLookDistance;
     private static final float MAX_HEAD_ROTATION = 75.0F;
-    private static final float ROTATION_SPEED = 10.0F;
+    private static final float ROTATION_SPEED = (float) Scrubians.CONFIG.NPCHeadSpeed;
     private static final String NPC_ID_KEY = "npc_id";
 
     // Interaction cooldown tracking

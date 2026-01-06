@@ -29,6 +29,7 @@ import net.minecraft.util.math.Vec3d;
  * /npc violent list - List all violent NPCs
  * /npc violent remove <id> - Remove a violent NPC
  */
+
 public class SpawnViolentNpcCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {

@@ -5,10 +5,12 @@ import net.luckperms.api.LuckPermsProvider;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+/**
+ * The type Scrubians permissions.
+ */
 public final class ScrubiansPermissions {
 
     private ScrubiansPermissions() {}
-
     public static boolean has(ServerCommandSource source, String permission) {
         // Console always allowed
         if (source.getEntity() == null) return true;
