@@ -16,7 +16,7 @@ public class DialogueEditCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc").then(CommandManager.literal("edit").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.edit"))
-                            .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0)).then(CommandManager.literal("dialogue")
+                            .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0)).then(CommandManager.literal("dialogue").excute(DialogueEditCommand::help)
                                     // /dialogueedit <id> addpage <text>
                                     .then(CommandManager.literal("addpage")
                                             .then(CommandManager.argument("text", StringArgumentType.greedyString())
@@ -44,6 +44,23 @@ public class DialogueEditCommand {
         ));
     }
 
+    private static int help(CommandContext<ServerCommandSource> ctx) {
+        ServerCommandSource source = ctx.getSource();
+
+        source.sendFeedback(() -> Text.literal("§a§l=== Dialogue Commands ==="), false);
+        source.sendFeedback(() -> Text.literal("§eEditing Dialogue for NPC #" + npcId + " (" + npc.get().name + ")"), false);
+        source.sendFeedback(() -> Text.literal("§7Commands:"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " dialogue addpage <text> §f- Adds a new page with the text given as NPC dialogue"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " dialogue addoption <text> <actionID> §f- Adds an option to current page with the action id being what is done"), false);
+        source.sendFeedback(() -> Text.literal("§fAction IDs: next, close, <pagenumber>, run_<command>"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " dialogue clear §f- clears all dialogue from the NPC"), false);
+        source.sendFeedback(() -> Text.literal("§7  /npc edit " + npcId + " dialogue view §f- Lets you view the NPC"), false);
+        source.sendFeedback(() -> Text.literal("§7 You may always edit the dialogue in the JSON file!"), false);
+
+        return 1;
+    }
+    
+    
     private static int addPage(CommandContext<ServerCommandSource> ctx) {
         int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
         String text = StringArgumentType.getString(ctx, "text");
