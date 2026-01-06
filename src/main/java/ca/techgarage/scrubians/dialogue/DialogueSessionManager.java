@@ -1,7 +1,7 @@
 package ca.techgarage.scrubians.dialogue;
 
 import net.minecraft.server.network.ServerPlayerEntity;
-
+import ca.techgarage.scrubians.Scrubians;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +146,7 @@ public class DialogueSessionManager {
         // This prevents players from typing /dialogueaction run_op_@s or similar exploits
         if (!session.isValidActionForCurrentPage(actionId)) {
             player.sendMessage(net.minecraft.text.Text.literal("§cInvalid dialogue action!"), false);
-            System.out.println("[Scrubians]: SECURITY WARNING: Player " + player.getName().getString() +
+            Scrubians.logger("error", "[Scrubians]: SECURITY WARNING: Player " + player.getName().getString() +
                     " attempted invalid action: " + actionId);
             endDialogue(player);
             return;
@@ -179,7 +179,7 @@ public class DialogueSessionManager {
         // Handle run_command actions
         if (actionId.startsWith("run_")) {
             String command = actionId.substring(4).replace("_", " ");
-            System.out.println("[Scrubians] Executing command: /" + command);
+            Scrubians.logger("info", "[Scrubians] Executing command: /" + command);
 
             // Execute command as server with the player's command source
             player.getEntityWorld().getServer().getCommandManager().parseAndExecute(
