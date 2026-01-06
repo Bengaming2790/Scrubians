@@ -16,7 +16,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
 
 import ca.techgarage.scrubians.commands.NpcKillInvalidCommand;
@@ -32,6 +33,10 @@ public class Scrubians implements ModInitializer {
      * The constant CONFIG.
      */
     public static ScrubiansConfig CONFIG;
+
+    public static final String MOD_ID = "scrubians";
+    
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static final boolean DEVELOPER_MODE = false;
 
@@ -61,7 +66,7 @@ public class Scrubians implements ModInitializer {
         CONFIG = AutoConfig.getConfigHolder(ScrubiansConfig.class).getConfig();
 
         if (DEVELOPER_MODE) {
-            System.out.println("[Scrubians] Developer mode is ON - Initializing unreleased features.");
+            Logger.info("[Scrubians] Developer mode is ON - Initializing unreleased features.");
             CommandRegistrationCallback.EVENT.register(SpawnViolentNpcCommand::register);
 
         }
@@ -70,7 +75,7 @@ public class Scrubians implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // Use current working directory (where the server is actually running)
             File serverRoot = new File(".").getAbsoluteFile();
-            System.out.println("[Scrubians] Server root directory: " + serverRoot.getAbsolutePath());
+            Logger.info("[Scrubians] Server root directory: " + serverRoot.getAbsolutePath());
             NpcRegistry.init(serverRoot);
             ViolentNpcRegistry.init(serverRoot);
 
@@ -78,7 +83,7 @@ public class Scrubians implements ModInitializer {
             server.execute(() -> {
                 try {
                     Thread.sleep(1000); // 1 second delay to ensure world is fully loaded
-                    System.out.println("[Scrubians] Initial NPC spawn on server start");
+                    Logger.info("[Scrubians] Initial NPC spawn on server start");
                     for (ServerWorld world : server.getWorlds()) {
                         respawnAllOnServerStart(world);
                     }
@@ -133,14 +138,14 @@ public class Scrubians implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            System.out.println("[Scrubians] Server stopping, saving NPC data...");
+            Logger.info("[Scrubians] Server stopping, saving NPC data...");
             NpcRegistry.forceSave();
             hasSpawnedNPCsOnStartup = false; // Reset for next server start
             ViolentNpcRegistry.forceSave();
             ViolentNpcTracker.clear();
         });
 
-        System.out.println("[Scrubians] Loaded");
+        Logger.info("[Scrubians] Loaded");
     }
 
     /**
@@ -148,6 +153,20 @@ public class Scrubians implements ModInitializer {
      *
      * @return the config
      */
+
+    public static void logger(String type, String log) {
+
+        if (type.equals("warning") {
+            Logger.warn(log);
+        } else if (type.equals("error")) {
+            Logger.error(log);
+        } else {
+            Logger.info(log);
+        } 
+        
+    }
+    
+    
     public static ScrubiansConfig getConfig() {
         return CONFIG;
     }
