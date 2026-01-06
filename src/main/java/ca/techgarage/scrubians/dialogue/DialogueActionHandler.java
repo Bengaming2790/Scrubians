@@ -4,7 +4,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.sound.SoundCategory;
-
+import ca.techgarage.scrubians.Scrubians;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -33,7 +33,7 @@ public class DialogueActionHandler {
      */
     public static void registerAction(String actionId, BiConsumer<ServerPlayerEntity, Integer> handler) {
         ACTION_HANDLERS.put(actionId, handler);
-        System.out.println("[Scrubians] Registered dialogue action: " + actionId);
+        Scrubians.logger("info", "[Scrubians] Registered dialogue action: " + actionId);
     }
 
     /**
@@ -41,7 +41,7 @@ public class DialogueActionHandler {
      * @return true if dialogue should continue, false if it should end
      */
     public static boolean handleAction(ServerPlayerEntity player, int npcId, String actionId) {
-        System.out.println("[Scrubians] Player " + player.getName().getString() + " triggered action: " + actionId);
+        Scrubians.logger("info", "[Scrubians] Player " + player.getName().getString() + " triggered action: " + actionId);
 
         BiConsumer<ServerPlayerEntity, Integer> handler = ACTION_HANDLERS.get(actionId);
 
