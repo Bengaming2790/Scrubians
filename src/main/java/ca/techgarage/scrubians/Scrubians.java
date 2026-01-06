@@ -156,9 +156,9 @@ public class Scrubians implements ModInitializer {
 
     public static void logger(String type, String log) {
 
-        if (type.equals("warning") {
+        if (type.equalsIgnoreCase("warning") {
             Logger.warn(log);
-        } else if (type.equals("error")) {
+        } else if (type.equalsIgnoreCase("error")) {
             Logger.error(log);
         } else {
             Logger.info(log);
