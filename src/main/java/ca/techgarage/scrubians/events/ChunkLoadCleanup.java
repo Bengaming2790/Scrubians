@@ -7,7 +7,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.chunk.WorldChunk;
-
+import ca.techgarage.scrubians.Scrubians; 
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +54,7 @@ public class ChunkLoadCleanup {
                 String name = mannequin.getCustomName() != null ? mannequin.getCustomName().getString() : "Unknown";
                 int id = mannequin instanceof TrackingMannequinEntity ? ((TrackingMannequinEntity) mannequin).getNpcId() : -1;
 
-                System.out.println("[Scrubians] Chunk cleanup: Removing invalid mannequin '" + name + "' (ID: " + id + ") at " + mannequin.getEntityPos());
+                Scrubians.logger("info", "[Scrubians] Chunk cleanup: Removing invalid mannequin '" + name + "' (ID: " + id + ") at " + mannequin.getEntityPos());
                 mannequin.discard();
                 totalCleaned++;
             }
