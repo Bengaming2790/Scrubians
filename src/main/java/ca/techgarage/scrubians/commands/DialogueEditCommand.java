@@ -15,37 +15,50 @@ public class DialogueEditCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                CommandManager.literal("npc").then(CommandManager.literal("edit").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.edit"))
-                            .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0)).then(CommandManager.literal("dialogue").excute(DialogueEditCommand::help)
-                                    // /dialogueedit <id> addpage <text>
-                                    .then(CommandManager.literal("addpage")
-                                            .then(CommandManager.argument("text", StringArgumentType.greedyString())
-                                                    .executes(DialogueEditCommand::addPage)
-                                            )
-                                    )
-                                    // /dialogueedit <id> addoption <text> <action>
-                                    .then(CommandManager.literal("addoption")
-                                            .then(CommandManager.argument("text", StringArgumentType.string())
-                                                    .then(CommandManager.argument("action", StringArgumentType.word())
-                                                            .executes(DialogueEditCommand::addOption)
-                                                    )
-                                            )
-                                    )
-                                    // /dialogueedit <id> clear
-                                    .then(CommandManager.literal("clear")
-                                            .executes(DialogueEditCommand::clearDialogue)
-                                    )
-                                    // /dialogueedit <id> view
-                                    .then(CommandManager.literal("view")
-                                            .executes(DialogueEditCommand::viewDialogue)
-                                    )
-                            )
-                )
-        ));
+                CommandManager.literal("npc")
+                        .then(CommandManager.literal("edit")
+                                .requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.edit"))
+                                .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0))
+                                        .then(CommandManager.literal("dialogue")
+                                                // /npc edit <id> dialogue
+                                                .executes(DialogueEditCommand::help)
+
+                                                // /npc edit <id> dialogue addpage <text>
+                                                .then(CommandManager.literal("addpage")
+                                                        .then(CommandManager.argument("text", StringArgumentType.greedyString())
+                                                                .executes(DialogueEditCommand::addPage)
+                                                        )
+                                                )
+
+                                                // /npc edit <id> dialogue addoption <text> <action>
+                                                .then(CommandManager.literal("addoption")
+                                                        .then(CommandManager.argument("text", StringArgumentType.string())
+                                                                .then(CommandManager.argument("action", StringArgumentType.word())
+                                                                        .executes(DialogueEditCommand::addOption)
+                                                                )
+                                                        )
+                                                )
+
+                                                // /npc edit <id> dialogue clear
+                                                .then(CommandManager.literal("clear")
+                                                        .executes(DialogueEditCommand::clearDialogue)
+                                                )
+
+                                                // /npc edit <id> dialogue view
+                                                .then(CommandManager.literal("view")
+                                                        .executes(DialogueEditCommand::viewDialogue)
+                                                )
+                                        )
+                                )
+                        )
+        );
     }
+
 
     private static int help(CommandContext<ServerCommandSource> ctx) {
         ServerCommandSource source = ctx.getSource();
+        int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
+        var npc = NpcRegistry.getNpcById(npcId);
 
         source.sendFeedback(() -> Text.literal("§a§l=== Dialogue Commands ==="), false);
         source.sendFeedback(() -> Text.literal("§eEditing Dialogue for NPC #" + npcId + " (" + npc.get().name + ")"), false);

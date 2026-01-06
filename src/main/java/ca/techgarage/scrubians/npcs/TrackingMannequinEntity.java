@@ -70,7 +70,7 @@ public class TrackingMannequinEntity extends MannequinEntity {
             if (this.age % 200 == 0 && this.npcId >= 0) {
                 var npcOpt = NpcRegistry.getNpcById(this.npcId);
                 if (npcOpt.isEmpty()) {
-                    System.err.println("[Scrubians] NPC #" + this.npcId + " no longer in registry, removing entity");
+                    Scrubians.logger("info","[Scrubians] NPC #" + this.npcId + " no longer in registry, removing entity");
                     this.discard();
                     return;
                 }
@@ -81,7 +81,7 @@ public class TrackingMannequinEntity extends MannequinEntity {
                 if (npcOpt.isPresent()) {
                     var pathSize = npcOpt.get().getPath().size();
                     if (pathSize > 0 && this.age == 1) {
-                        System.out.println("[Scrubians] NPC #" + this.npcId + " has " + pathSize + " waypoints, starting pathfinding");
+                        Scrubians.logger("info","[Scrubians] NPC #" + this.npcId + " has " + pathSize + " waypoints, starting pathfinding");
                     }
                 }
             }
@@ -103,7 +103,7 @@ public class TrackingMannequinEntity extends MannequinEntity {
 
         NpcRegistry.getNpcById(this.npcId).ifPresent(npc -> {
             if (npc.getPath() != null && !npc.getPath().isEmpty()) {
-                System.out.println("[Scrubians] NPC #" + this.npcId + " initialized with " + npc.getPath().size() + " waypoints");
+                Scrubians.logger("info","[Scrubians] NPC #" + this.npcId + " initialized with " + npc.getPath().size() + " waypoints");
             }
         });
     }
@@ -127,11 +127,10 @@ public class TrackingMannequinEntity extends MannequinEntity {
         this.waypointWaitTimer = view.getInt("waypointWaitTimer", 0);
         this.isWaitingAtWaypoint = view.getBoolean("isWaiting", false);
 
-        System.out.println("[Scrubians] READ NBT - Loaded NPC ID: " + this.npcId + " at " + this.getEntityPos());
+        Scrubians.logger("info","[Scrubians] READ NBT - Loaded NPC ID: " + this.npcId + " at " + this.getEntityPos());
 
-        // CRITICAL: Remove orphaned mannequins (those without valid NPC data)
         if (this.npcId < 0) {
-            System.err.println("[Scrubians] ✗ Removing mannequin with invalid NPC ID at " + this.getEntityPos());
+            Scrubians.logger("info","[Scrubians] ✗ Removing mannequin with invalid NPC ID at " + this.getEntityPos());
             this.discard();
             return;
         }
@@ -139,12 +138,12 @@ public class TrackingMannequinEntity extends MannequinEntity {
         // Check if NPC exists in registry
         var npcOpt = NpcRegistry.getNpcById(this.npcId);
         if (npcOpt.isEmpty()) {
-            System.err.println("[Scrubians] ✗ WARNING: NPC #" + this.npcId + " NOT FOUND in registry! Removing orphaned entity at " + this.getEntityPos());
+            Scrubians.logger("info","[Scrubians] ✗ WARNING: NPC #" + this.npcId + " NOT FOUND in registry! Removing orphaned entity at " + this.getEntityPos());
             this.discard();
             return;
         }
 
-        System.out.println("[Scrubians] ✓ NPC #" + this.npcId + " found in registry: " + npcOpt.get().name);
+        Scrubians.logger("info","[Scrubians] ✓ NPC #" + this.npcId + " found in registry: " + npcOpt.get().name);
     }
 
     @Override

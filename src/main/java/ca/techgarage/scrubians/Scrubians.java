@@ -66,7 +66,7 @@ public class Scrubians implements ModInitializer {
         CONFIG = AutoConfig.getConfigHolder(ScrubiansConfig.class).getConfig();
 
         if (DEVELOPER_MODE) {
-            Logger.info("[Scrubians] Developer mode is ON - Initializing unreleased features.");
+            LOGGER.info("[Scrubians] Developer mode is ON - Initializing unreleased features.");
             CommandRegistrationCallback.EVENT.register(SpawnViolentNpcCommand::register);
 
         }
@@ -75,7 +75,7 @@ public class Scrubians implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // Use current working directory (where the server is actually running)
             File serverRoot = new File(".").getAbsoluteFile();
-            Logger.info("[Scrubians] Server root directory: " + serverRoot.getAbsolutePath());
+            LOGGER.info("[Scrubians] Server root directory: " + serverRoot.getAbsolutePath());
             NpcRegistry.init(serverRoot);
             ViolentNpcRegistry.init(serverRoot);
 
@@ -83,7 +83,7 @@ public class Scrubians implements ModInitializer {
             server.execute(() -> {
                 try {
                     Thread.sleep(1000); // 1 second delay to ensure world is fully loaded
-                    Logger.info("[Scrubians] Initial NPC spawn on server start");
+                    LOGGER.info("[Scrubians] Initial NPC spawn on server start");
                     for (ServerWorld world : server.getWorlds()) {
                         respawnAllOnServerStart(world);
                     }
@@ -138,14 +138,14 @@ public class Scrubians implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            Logger.info("[Scrubians] Server stopping, saving NPC data...");
+            LOGGER.info("[Scrubians] Server stopping, saving NPC data...");
             NpcRegistry.forceSave();
             hasSpawnedNPCsOnStartup = false; // Reset for next server start
             ViolentNpcRegistry.forceSave();
             ViolentNpcTracker.clear();
         });
 
-        Logger.info("[Scrubians] Loaded");
+        LOGGER.info("[Scrubians] Loaded");
     }
 
     /**
@@ -156,12 +156,12 @@ public class Scrubians implements ModInitializer {
 
     public static void logger(String type, String log) {
 
-        if (type.equalsIgnoreCase("warning") {
-            Logger.warn(log);
+        if (type.equalsIgnoreCase("warning")) {
+            LOGGER.warn(log);
         } else if (type.equalsIgnoreCase("error")) {
-            Logger.error(log);
+            LOGGER.error(log);
         } else {
-            Logger.info(log);
+            LOGGER.info(log);
         } 
         
     }

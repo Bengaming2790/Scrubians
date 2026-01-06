@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.npcs;
 
+import ca.techgarage.scrubians.Scrubians;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
@@ -36,7 +37,7 @@ public final class NpcEntityFactory {
             NpcRegistry.changeSkin(registryId, skinName);
         }
 
-        System.out.println("[Scrubians] Creating NEW NPC #" + registryId + " (" + name + ") with skin: " + (skinName != null ? skinName : "default"));
+        Scrubians.logger("info","[Scrubians] Creating NEW NPC #" + registryId + " (" + name + ") with skin: " + (skinName != null ? skinName : "default"));
 
         // Now create the entity with this ID
         return createNpcEntity(world, registryId, pos, name, skinName, attackable);

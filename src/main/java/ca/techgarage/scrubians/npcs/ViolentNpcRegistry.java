@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.npcs;
 
+import ca.techgarage.scrubians.Scrubians;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -134,10 +135,10 @@ public final class ViolentNpcRegistry {
         }
 
         saveFile = new File(dataFolder, "violent_npcs.json");
-        System.out.println("[Scrubians] Violent NPC JSON file: " + saveFile.getAbsolutePath());
+        Scrubians.logger("info","[Scrubians] Violent NPC JSON file: " + saveFile.getAbsolutePath());
 
         if (saveFile.exists()) {
-            System.out.println("[Scrubians] Loading violent NPCs from JSON...");
+            Scrubians.logger("info","[Scrubians] Loading violent NPCs from JSON...");
             try (FileReader reader = new FileReader(saveFile)) {
                 Type listType = new TypeToken<List<ViolentNpcData>>() {}.getType();
                 List<ViolentNpcData> loaded = GSON.fromJson(reader, listType);
@@ -149,17 +150,17 @@ public final class ViolentNpcRegistry {
                         if (npc.stats == null) npc.stats = new Stats();
                         if (npc.spawnArea == null) npc.spawnArea = new SpawnArea();
                     }
-                    System.out.println("[Scrubians] Loaded " + NPC_LIST.size() + " violent NPCs");
+                    Scrubians.logger("info","[Scrubians] Loaded " + NPC_LIST.size() + " violent NPCs");
                 }
             } catch (Exception e) {
-                System.err.println("[Scrubians] ERROR loading violent NPCs:");
+                Scrubians.logger("error","[Scrubians] ERROR loading violent NPCs:");
                 e.printStackTrace();
                 NPC_LIST.clear();
                 NEXT_ID = 0;
                 save();
             }
         } else {
-            System.out.println("[Scrubians] Creating new violent NPCs file...");
+            Scrubians.logger("info","[Scrubians] Creating new violent NPCs file...");
             save();
         }
     }
@@ -170,9 +171,9 @@ public final class ViolentNpcRegistry {
         try {
             String json = GSON.toJson(NPC_LIST);
             java.nio.file.Files.write(saveFile.toPath(), json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            System.out.println("[Scrubians] Saved " + NPC_LIST.size() + " violent NPCs");
+            Scrubians.logger("info","[Scrubians] Saved " + NPC_LIST.size() + " violent NPCs");
         } catch (IOException e) {
-            System.err.println("[Scrubians] Error saving violent NPCs:");
+            Scrubians.logger("error","[Scrubians] Error saving violent NPCs:");
             e.printStackTrace();
         }
     }
