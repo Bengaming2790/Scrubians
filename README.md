@@ -122,4 +122,6 @@ Contributions are welcome!
 - Pull requests
 - Documentation improvements
 
+**If you are working on features not currently in the public release, you must set DEVELOPER_MODE to true in the Scrubians Class**
+
 Open an issue or submit a PR to get started.
