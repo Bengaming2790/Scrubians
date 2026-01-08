@@ -68,16 +68,12 @@ public final class NpcEntityFactory {
         });
 
         if (!existing.isEmpty()) {
-          //  System.out.println("[Scrubians] NPC #" + npcId + " already exists in world, skipping spawn");
             return CompletableFuture.completedFuture(existing.get(0));
         }
 
         NpcRegistry.NpcData npcData = npcDataOpt.get();
         Vec3d pos = npcData.getPosition();
         String skinName = npcData.skin != null ? npcData.skin : ".";
-
-       // System.out.println("[Scrubians] Respawning EXISTING NPC #" + npcId + " (" + npcData.name + ") with skin: " + skinName + " - NO NEW REGISTRY ENTRY");
-
         // Create entity with EXISTING ID - does NOT call registerNpc()
         return createNpcEntity(world, npcId, pos, npcData.name, skinName, false);
     }

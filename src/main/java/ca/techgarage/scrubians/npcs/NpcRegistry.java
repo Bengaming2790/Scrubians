@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians.npcs;
 
+import ca.techgarage.scrubians.Scrubians;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -230,25 +231,25 @@ public final class NpcRegistry {
         // serverRoot from getRunDirectory() should already be the right place
         File scrubiansFolder = new File(serverRoot, ".scrubians");
         if (!scrubiansFolder.exists()) {
-            System.out.println("[Scrubians] Creating .scrubians folder at: " + scrubiansFolder.getAbsolutePath());
+            Scrubians.logger("info","[Scrubians] Creating .scrubians folder at: " + scrubiansFolder.getAbsolutePath());
             scrubiansFolder.mkdirs();
         } else {
-            System.out.println("[Scrubians] .scrubians folder exists at: " + scrubiansFolder.getAbsolutePath());
+            Scrubians.logger("info","[Scrubians] .scrubians folder exists at: " + scrubiansFolder.getAbsolutePath());
         }
 
         File dataFolder = new File(scrubiansFolder, "data");
         if (!dataFolder.exists()) {
-            System.out.println("[Scrubians] Creating data folder at: " + dataFolder.getAbsolutePath());
+            Scrubians.logger("info","[Scrubians] Creating data folder at: " + dataFolder.getAbsolutePath());
             dataFolder.mkdirs();
         } else {
-            System.out.println("[Scrubians] data folder exists at: " + dataFolder.getAbsolutePath());
+            Scrubians.logger("info","[Scrubians] data folder exists at: " + dataFolder.getAbsolutePath());
         }
 
         saveFile = new File(dataFolder, "scrubians_npcs.json");
-        System.out.println("[Scrubians] JSON file path: " + saveFile.getAbsolutePath());
+        Scrubians.logger("info","[Scrubians] JSON file path: " + saveFile.getAbsolutePath());
 
         if (saveFile.exists()) {
-            System.out.println("[Scrubians] Loading existing NPCs from JSON...");
+            Scrubians.logger("info","[Scrubians] Loading existing NPCs from JSON...");
             try (FileReader reader = new FileReader(saveFile)) {
                 Type listType = new TypeToken<List<NpcData>>() {}.getType();
                 List<NpcData> loaded = GSON.fromJson(reader, listType);
@@ -260,19 +261,19 @@ public final class NpcRegistry {
                         // Ensure path is initialized
                         if (npc.path == null) npc.path = new ArrayList<>();
                     }
-                    System.out.println("[Scrubians] Loaded " + NPC_LIST.size() + " NPCs from JSON");
+                    Scrubians.logger("info","[Scrubians] Loaded " + NPC_LIST.size() + " NPCs from JSON");
                 }
             } catch (Exception e) {
-                System.err.println("[Scrubians] ERROR: Corrupted JSON file detected!");
-                System.err.println("[Scrubians] Creating backup and starting fresh...");
+                Scrubians.logger("info","[Scrubians] ERROR: Corrupted JSON file detected!");
+                Scrubians.logger("error","[Scrubians] Creating backup and starting fresh...");
 
                 // Create backup of corrupted file
                 File backup = new File(dataFolder, "scrubians_npcs_corrupted_" + System.currentTimeMillis() + ".json");
                 try {
                     java.nio.file.Files.copy(saveFile.toPath(), backup.toPath());
-                    System.out.println("[Scrubians] Backup saved to: " + backup.getName());
+                    Scrubians.logger("info","[Scrubians] Backup saved to: " + backup.getName());
                 } catch (IOException backupError) {
-                    System.err.println("[Scrubians] Failed to create backup: " + backupError.getMessage());
+                    Scrubians.logger("error","[Scrubians] Failed to create backup: " + backupError.getMessage());
                 }
 
                 // Start fresh
@@ -280,18 +281,18 @@ public final class NpcRegistry {
                 NEXT_ID = 0;
                 save();
 
-                System.err.println("[Scrubians] Original error details:");
+                Scrubians.logger("error","[Scrubians] Original error details:");
                 e.printStackTrace();
             }
         } else {
-            System.out.println("[Scrubians] JSON file doesn't exist, creating new one...");
+            Scrubians.logger("info","[Scrubians] JSON file doesn't exist, creating new one...");
             save();
         }
     }
 
     private static void save() {
         if (saveFile == null) {
-            System.err.println("[Scrubians] Cannot save - saveFile is null!");
+            Scrubians.logger("error","[Scrubians] Cannot save - saveFile is null!");
             return;
         }
 
@@ -299,9 +300,9 @@ public final class NpcRegistry {
             // Use Files.write for better cross-platform compatibility
             String json = GSON.toJson(NPC_LIST);
             java.nio.file.Files.write(saveFile.toPath(), json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            System.out.println("[Scrubians] Saved " + NPC_LIST.size() + " NPCs to: " + saveFile.getAbsolutePath());
+            Scrubians.logger("info","[Scrubians] Saved " + NPC_LIST.size() + " NPCs to: " + saveFile.getAbsolutePath());
         } catch (IOException e) {
-            System.err.println("[Scrubians] Error saving JSON file:");
+            Scrubians.logger("error","[Scrubians] Error saving JSON file:");
             e.printStackTrace();
         }
     }

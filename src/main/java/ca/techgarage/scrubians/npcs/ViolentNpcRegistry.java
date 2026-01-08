@@ -30,7 +30,11 @@ public final class ViolentNpcRegistry {
     private static long lastSaveTime = 0;
     private static final long SAVE_INTERVAL_MS = 30000; // 30 seconds
 
+    /**
+     * The type Violent npc data.
+     */
     public static class ViolentNpcData {
+
         public int id;
         public String name;
         public String entityType; // e.g., "minecraft:zombie", "minecraft:wither"
@@ -38,6 +42,14 @@ public final class ViolentNpcRegistry {
         public Stats stats;
         public boolean persistent; // If true, respawns when killed
 
+        /**
+         * Instantiates a new Violent npc data.
+         *
+         * @param id         the id
+         * @param name       the name
+         * @param entityType the entity type
+         * @param spawnArea  the spawn area
+         */
         public ViolentNpcData(int id, String name, String entityType, SpawnArea spawnArea) {
             this.id = id;
             this.name = name;
@@ -47,6 +59,11 @@ public final class ViolentNpcRegistry {
             this.persistent = true;
         }
 
+        /**
+         * Gets entity type.
+         *
+         * @return the entity type
+         */
         public EntityType<?> getEntityType() {
             try {
                 Identifier identifier = Identifier.tryParse(entityType);
@@ -60,17 +77,31 @@ public final class ViolentNpcRegistry {
         }
     }
 
+    /**
+     * The type Spawn area.
+     */
     public static class SpawnArea {
         public double minX, minY, minZ;
         public double maxX, maxY, maxZ;
         public int maxCount; // Maximum number of this NPC that can exist at once
         public int respawnDelayTicks; // Ticks before respawning (20 = 1 second)
 
+        /**
+         * Instantiates a new Spawn area.
+         */
         public SpawnArea() {
             this.maxCount = 1;
             this.respawnDelayTicks = 200; // 10 seconds default
         }
 
+        /**
+         * Instantiates a new Spawn area.
+         *
+         * @param corner1           the corner 1
+         * @param corner2           the corner 2
+         * @param maxCount          the max count
+         * @param respawnDelayTicks the respawn delay ticks
+         */
         public SpawnArea(Vec3d corner1, Vec3d corner2, int maxCount, int respawnDelayTicks) {
             this.minX = Math.min(corner1.x, corner2.x);
             this.minY = Math.min(corner1.y, corner2.y);
@@ -82,6 +113,11 @@ public final class ViolentNpcRegistry {
             this.respawnDelayTicks = respawnDelayTicks;
         }
 
+        /**
+         * Gets random position.
+         *
+         * @return the random position
+         */
         public Vec3d getRandomPosition() {
             double x = minX + Math.random() * (maxX - minX);
             double y = minY + Math.random() * (maxY - minY);
@@ -89,6 +125,12 @@ public final class ViolentNpcRegistry {
             return new Vec3d(x, y, z);
         }
 
+        /**
+         * Is inside boolean.
+         *
+         * @param pos the pos
+         * @return the boolean
+         */
         public boolean isInside(Vec3d pos) {
             return pos.x >= minX && pos.x <= maxX &&
                     pos.y >= minY && pos.y <= maxY &&
@@ -96,6 +138,9 @@ public final class ViolentNpcRegistry {
         }
     }
 
+    /**
+     * The type Stats.
+     */
     public static class Stats {
         public double health; // Max health
         public double attackDamage;
@@ -104,6 +149,9 @@ public final class ViolentNpcRegistry {
         public double followRange; // How far they detect players
         public boolean glowing; // Make entity glow
 
+        /**
+         * Instantiates a new Stats.
+         */
         public Stats() {
             this.health = 20.0; // Default mob health
             this.attackDamage = 2.0;
@@ -113,6 +161,15 @@ public final class ViolentNpcRegistry {
             this.glowing = false;
         }
 
+        /**
+         * Instantiates a new Stats.
+         *
+         * @param health              the health
+         * @param attackDamage        the attack damage
+         * @param speed               the speed
+         * @param knockbackResistance the knockback resistance
+         * @param followRange         the follow range
+         */
         public Stats(double health, double attackDamage, double speed, double knockbackResistance, double followRange) {
             this.health = health;
             this.attackDamage = attackDamage;
@@ -123,6 +180,11 @@ public final class ViolentNpcRegistry {
         }
     }
 
+    /**
+     * Init.
+     *
+     * @param serverRoot the server root
+     */
     public static void init(File serverRoot) {
         File scrubiansFolder = new File(serverRoot, ".scrubians");
         if (!scrubiansFolder.exists()) {
@@ -178,6 +240,14 @@ public final class ViolentNpcRegistry {
         }
     }
 
+    /**
+     * Register npc int.
+     *
+     * @param name       the name
+     * @param entityType the entity type
+     * @param spawnArea  the spawn area
+     * @return the int
+     */
     public static int registerNpc(String name, String entityType, SpawnArea spawnArea) {
         int id = NEXT_ID++;
         ViolentNpcData npc = new ViolentNpcData(id, name, entityType, spawnArea);
@@ -186,11 +256,22 @@ public final class ViolentNpcRegistry {
         return id;
     }
 
+    /**
+     * Remove npc by id.
+     *
+     * @param id the id
+     */
     public static void removeNpcById(int id) {
         NPC_LIST.removeIf(npc -> npc.id == id);
         forceSave();
     }
 
+    /**
+     * Sets stats.
+     *
+     * @param id    the id
+     * @param stats the stats
+     */
     public static void setStats(int id, Stats stats) {
         for (ViolentNpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -201,6 +282,12 @@ public final class ViolentNpcRegistry {
         }
     }
 
+    /**
+     * Sets spawn area.
+     *
+     * @param id   the id
+     * @param area the area
+     */
     public static void setSpawnArea(int id, SpawnArea area) {
         for (ViolentNpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -211,6 +298,12 @@ public final class ViolentNpcRegistry {
         }
     }
 
+    /**
+     * Sets persistent.
+     *
+     * @param id         the id
+     * @param persistent the persistent
+     */
     public static void setPersistent(int id, boolean persistent) {
         for (ViolentNpcData npc : NPC_LIST) {
             if (npc.id == id) {
@@ -221,6 +314,9 @@ public final class ViolentNpcRegistry {
         }
     }
 
+    /**
+     * Tick save.
+     */
     public static void tickSave() {
         if (needsSave) {
             long currentTime = System.currentTimeMillis();
@@ -232,20 +328,40 @@ public final class ViolentNpcRegistry {
         }
     }
 
+    /**
+     * Force save.
+     */
     public static void forceSave() {
         save();
         needsSave = false;
         lastSaveTime = System.currentTimeMillis();
     }
 
+    /**
+     * Gets all npcs.
+     *
+     * @return the all npcs
+     */
     public static List<ViolentNpcData> getAllNpcs() {
         return List.copyOf(NPC_LIST);
     }
 
-    public static Optional<ViolentNpcData> getNpcById(int id) {
-        return NPC_LIST.stream().filter(npc -> npc.id == id).findFirst();
+    /**
+     * Gets npc by id.
+     *
+     * @param id the id
+     * @return the npc by id
+     */
+    public static Optional<ViolentNpcData> getNpcById(Optional<Integer> id) {
+        int realID = id.orElse(-1);
+
+
+        return NPC_LIST.stream().filter(npc -> npc.id == realID).findFirst();
     }
 
+    /**
+     * Clear.
+     */
     public static void clear() {
         NPC_LIST.clear();
         forceSave();

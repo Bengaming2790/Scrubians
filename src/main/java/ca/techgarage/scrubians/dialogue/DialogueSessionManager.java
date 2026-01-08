@@ -140,8 +140,6 @@ public class DialogueSessionManager {
         DialogueSession session = getSession(player);
         if (session == null) return;
 
-       // System.out.println("[Scrubians] Player " + player.getName().getString() + " clicked option: " + actionId);
-
         // SECURITY: Validate that the action is valid for the current page
         // This prevents players from typing /dialogueaction run_op_@s or similar exploits
         if (!session.isValidActionForCurrentPage(actionId)) {
