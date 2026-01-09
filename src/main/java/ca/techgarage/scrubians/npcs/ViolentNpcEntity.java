@@ -140,12 +140,15 @@ public class ViolentNpcEntity {
      * Get the NPC ID from an entity's custom data
      *
      * @param entity the entity
-     * @return the npc id
+     * @return the npc id wrapped in Optional, or Optional.empty() if not found
      */
     public static Optional<Integer> getNpcId(Entity entity) {
         NbtComponent customData = entity.get(DataComponentTypes.CUSTOM_DATA);
-        if (customData == null || customData.isEmpty()) return Optional.of(-1);
+        if (customData == null || customData.isEmpty()) return Optional.empty();
+
         NbtCompound nbt = customData.copyNbt();
+        if (!nbt.contains(NPC_ID_TAG)) return Optional.empty();
+
         return nbt.getInt(NPC_ID_TAG);
     }
 
@@ -153,12 +156,15 @@ public class ViolentNpcEntity {
      * Get the base entity type from an entity's custom data
      *
      * @param entity the entity
-     * @return the base type
+     * @return the base type wrapped in Optional, or Optional.empty() if not found
      */
     public static Optional<String> getBaseType(Entity entity) {
         NbtComponent customData = entity.get(DataComponentTypes.CUSTOM_DATA);
-        if (customData == null || customData.isEmpty()) return Optional.of("");
+        if (customData == null || customData.isEmpty()) return Optional.empty();
+
         NbtCompound nbt = customData.copyNbt();
+        if (!nbt.contains(BASE_TYPE_TAG)) return Optional.empty();
+
         return nbt.getString(BASE_TYPE_TAG);
     }
 

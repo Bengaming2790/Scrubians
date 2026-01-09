@@ -31,14 +31,14 @@ public class ViolentNpcTracker {
 
         NPC_ID_TO_ENTITIES.computeIfAbsent(npcId, k -> new ArrayList<>()).add(uuid);
 
-        Scrubians.logger("[Scrubians] Registered violent NPC entity for NPC #" + npcId);
+        Scrubians.logger("[Scrubians] Registered violent NPC entity for NPC #" + npcId + " (Current count: " + getCurrentCount(npcId) + ")");
     }
 
     /**
      * Called when a violent NPC entity dies
      * This should be called when the entity's death is detected
      */
-    public static void notifyNpcDeath(ServerWorld world, Optional<Integer> npcId, UUID entityUuid) {
+    public static void notifyNpcDeath(ServerWorld world, int npcId, UUID entityUuid) {
         Scrubians.logger("[Scrubians] Violent NPC entity died (NPC #" + npcId + ")");
 
         // Remove from tracking
@@ -49,16 +49,15 @@ public class ViolentNpcTracker {
         }
 
         // Check if should respawn
-        Optional<ViolentNpcRegistry.ViolentNpcData> npcDataOpt = ViolentNpcRegistry.getNpcById(npcId);
+        Optional<ViolentNpcRegistry.ViolentNpcData> npcDataOpt = ViolentNpcRegistry.getNpcById(Optional.of(npcId));
         if (npcDataOpt.isPresent()) {
             ViolentNpcRegistry.ViolentNpcData npcData = npcDataOpt.get();
             if (npcData.spawnArea != null) {
                 // Only set respawn timer if not already set and not at max count
                 if (!RESPAWN_TIMERS.containsKey(npcId)) {
-                    int realNpcId = npcId.orElse(-1);
-                    int currentCount = getCurrentCount(realNpcId);
+                    int currentCount = getCurrentCount(npcId);
                     if (currentCount < npcData.spawnArea.maxCount) {
-                        RESPAWN_TIMERS.put(realNpcId, npcData.spawnArea.respawnDelayTicks);
+                        RESPAWN_TIMERS.put(npcId, npcData.spawnArea.respawnDelayTicks);
                         Scrubians.logger("[Scrubians] Will respawn NPC #" + npcId +
                                 " in " + (npcData.spawnArea.respawnDelayTicks / 20) + " seconds");
                     }
@@ -72,7 +71,6 @@ public class ViolentNpcTracker {
      */
     public static void tick(ServerWorld world) {
         // Tick down respawn timers
-        // Use a list to collect NPCs to spawn to avoid ConcurrentModificationException
         List<Integer> toSpawn = new ArrayList<>();
 
         Iterator<Map.Entry<Integer, Integer>> it = RESPAWN_TIMERS.entrySet().iterator();
@@ -92,21 +90,68 @@ public class ViolentNpcTracker {
 
         // Spawn NPCs after iteration is complete
         for (int npcId : toSpawn) {
-            spawnNpc(world, npcId);
+            // Check if we're still under max count before spawning
+            Optional<ViolentNpcRegistry.ViolentNpcData> npcDataOpt = ViolentNpcRegistry.getNpcById(Optional.of(npcId));
+            if (npcDataOpt.isPresent()) {
+                ViolentNpcRegistry.ViolentNpcData npcData = npcDataOpt.get();
+                if (npcData.spawnArea != null) {
+                    int currentCount = getCurrentCount(npcId);
+                    if (currentCount < npcData.spawnArea.maxCount) {
+                        spawnNpc(world, npcId);
+                    } else {
+                        Scrubians.logger("[Scrubians] Skipping respawn for NPC #" + npcId + " - already at max count");
+                    }
+                }
+            }
         }
 
         // Ensure NPCs are spawned up to their max count
         // Check every 5 seconds to avoid excessive spawning attempts
         if (world.getTime() % 100 == 0) {
+            Scrubians.logger("[Scrubians] Running periodic spawn check at tick " + world.getTime());
+
             for (ViolentNpcRegistry.ViolentNpcData npcData : ViolentNpcRegistry.getAllNpcs()) {
                 if (npcData.spawnArea == null) continue;
+
+                // Skip if there's an active respawn timer
+                if (RESPAWN_TIMERS.containsKey(npcData.id)) {
+                    Scrubians.logger("[Scrubians] Skipping NPC #" + npcData.id + " - has active respawn timer");
+                    continue;
+                }
 
                 int currentCount = getCurrentCount(npcData.id);
                 int needed = npcData.spawnArea.maxCount - currentCount;
 
-                if (needed > 0 && !RESPAWN_TIMERS.containsKey(npcData.id)) {
+                if (needed > 0) {
+                    Scrubians.logger("[Scrubians] NPC #" + npcData.id + " needs " + needed +
+                            " more entities (current: " + currentCount + ", max: " + npcData.spawnArea.maxCount + ")");
+
+                    // Spawn one at a time with verification
                     for (int i = 0; i < needed; i++) {
-                        spawnNpc(world, npcData.id);
+                        // Triple-check count before spawn (in case previous spawn in this loop succeeded)
+                        int countBeforeSpawn = getCurrentCount(npcData.id);
+                        Scrubians.logger("[Scrubians] Spawn attempt " + (i+1) + "/" + needed + " for NPC #" + npcData.id + " (count before: " + countBeforeSpawn + ")");
+
+                        if (countBeforeSpawn >= npcData.spawnArea.maxCount) {
+                            Scrubians.logger("[Scrubians] Reached max count for NPC #" + npcData.id + " during spawn loop, breaking");
+                            break;
+                        }
+
+                        boolean success = spawnNpc(world, npcData.id);
+
+                        if (!success) {
+                            Scrubians.logger("[Scrubians] Failed to spawn NPC #" + npcData.id + ", stopping spawn attempts");
+                            break;
+                        }
+
+                        // Verify the spawn actually increased the count
+                        int countAfterSpawn = getCurrentCount(npcData.id);
+                        Scrubians.logger("[Scrubians] After spawn: count is now " + countAfterSpawn);
+
+                        if (countAfterSpawn <= countBeforeSpawn) {
+                            Scrubians.logger("[Scrubians] WARNING: Spawn succeeded but count didn't increase! Breaking spawn loop.");
+                            break;
+                        }
                     }
                 }
             }
@@ -128,24 +173,29 @@ public class ViolentNpcTracker {
 
     /**
      * Spawn a violent NPC entity
+     * Returns true if spawn was successful
      */
-    public static void spawnNpc(ServerWorld world, int npcId) {
+    public static boolean spawnNpc(ServerWorld world, int npcId) {
         Optional<ViolentNpcRegistry.ViolentNpcData> npcDataOpt = ViolentNpcRegistry.getNpcById(Optional.of(npcId));
         if (!npcDataOpt.isPresent()) {
             Scrubians.logger("[Scrubians] NPC #" + npcId + " not found in registry");
-            return;
+            return false;
         }
 
         ViolentNpcRegistry.ViolentNpcData npcData = npcDataOpt.get();
 
         if (npcData.spawnArea == null) {
             Scrubians.logger("[Scrubians] NPC #" + npcId + " has no spawn area");
-            return;
+            return false;
         }
 
-        // Check if already at max count
-        if (getCurrentCount(npcId) >= npcData.spawnArea.maxCount) {
-            return;
+        // Check if already at max count BEFORE attempting spawn
+        int currentCount = getCurrentCount(npcId);
+        Scrubians.logger("[Scrubians] Attempting spawn for NPC #" + npcId + " - Current count: " + currentCount + "/" + npcData.spawnArea.maxCount);
+
+        if (currentCount >= npcData.spawnArea.maxCount) {
+            Scrubians.logger("[Scrubians] NPC #" + npcId + " already at max count (" + currentCount + "/" + npcData.spawnArea.maxCount + ")");
+            return false;
         }
 
         Vec3d spawnPos = npcData.spawnArea.getRandomPosition();
@@ -155,8 +205,11 @@ public class ViolentNpcTracker {
 
         if (entity != null) {
             registerEntity(entity, npcId);
+            Scrubians.logger("[Scrubians] Successfully spawned NPC #" + npcId + " at " + spawnPos + " - New count: " + getCurrentCount(npcId));
+            return true;
         } else {
             Scrubians.logger("[Scrubians] Failed to spawn violent NPC #" + npcId);
+            return false;
         }
     }
 
@@ -198,7 +251,11 @@ public class ViolentNpcTracker {
         }
 
         // Fall back to reading from entity NBT
-        return ViolentNpcEntity.getNpcId(entity);
+        int id = ViolentNpcEntity.getNpcId(entity).orElse(-1);
+        if (id == -1) {
+            return Optional.empty();
+        }
+        return Optional.of(id);
     }
 
     /**
@@ -270,6 +327,26 @@ public class ViolentNpcTracker {
             counts.put(entry.getKey(), entry.getValue().size());
         }
         return counts;
+    }
+
+    /**
+     * Initialize all NPCs on server start
+     * Call this when the server starts or when NPCs are loaded
+     */
+    public static void initializeAllNpcs(ServerWorld world) {
+        Scrubians.logger("[Scrubians] Initializing all violent NPCs...");
+        for (ViolentNpcRegistry.ViolentNpcData npcData : ViolentNpcRegistry.getAllNpcs()) {
+            if (npcData.spawnArea != null) {
+                // Spawn up to max count
+                for (int i = 0; i < npcData.spawnArea.maxCount; i++) {
+                    if (getCurrentCount(npcData.id) < npcData.spawnArea.maxCount) {
+                        spawnNpc(world, npcData.id);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /**

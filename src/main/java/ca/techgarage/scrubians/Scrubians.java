@@ -3,6 +3,7 @@ package ca.techgarage.scrubians;
 import ca.techgarage.scrubians.commands.*;
 import ca.techgarage.scrubians.dialogue.DialogueActionCommand;
 import ca.techgarage.scrubians.events.ChunkLoadCleanup;
+import ca.techgarage.scrubians.events.ViolentNpcChunkCleanup;
 import ca.techgarage.scrubians.npcs.*;
 import net.fabricmc.api.ModInitializer;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -22,28 +23,18 @@ import ca.techgarage.scrubians.commands.NpcKillInvalidCommand;
 
 import static ca.techgarage.scrubians.commands.NpcRespawnCommand.respawnAllOnServerStart;
 
-/**
- * The type Scrubians.
- */
 public class Scrubians implements ModInitializer {
 
-    /**
-     * The constant CONFIG.
-     */
     public static ScrubiansConfig CONFIG;
-
     public static final String MOD_ID = "scrubians";
-    
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
     private static final boolean DEVELOPER_MODE = true;
-
     private static int cleanupTickCounter = 0;
-    private static boolean hasSpawnedNPCsOnStartup = false; // Track if we've done initial spawn
+    private static boolean hasSpawnedNPCsOnStartup = false;
 
     @Override
     public void onInitialize() {
-
+        // Register commands
         CommandRegistrationCallback.EVENT.register(SpawnNpcCommand::register);
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcListCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcEditCommand.register(dispatcher));
@@ -60,63 +51,87 @@ public class Scrubians implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CleanupStatsCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcKillInvalidCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcHelpCommand.register(dispatcher));
+
         AutoConfig.register(ScrubiansConfig.class, GsonConfigSerializer::new);
         CONFIG = AutoConfig.getConfigHolder(ScrubiansConfig.class).getConfig();
+
         ViolentNpcEntityRegistration.register();
 
         if (DEVELOPER_MODE) {
-            logger("warning","[Scrubians] Developer mode is ON - Initializing unreleased features.");
+            logger("warning", "[Scrubians] Developer mode is ON - Initializing unreleased features.");
             CommandRegistrationCallback.EVENT.register(SpawnViolentNpcCommand::register);
-
         }
 
-
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            // Use current working directory (where the server is actually running)
             File serverRoot = new File(".").getAbsoluteFile();
             LOGGER.info("[Scrubians] Server root directory: " + serverRoot.getAbsolutePath());
             NpcRegistry.init(serverRoot);
-            ViolentNpcRegistry.init(serverRoot);
 
-            // Respawn all NPCs from registry ONCE after a short delay
+            if (DEVELOPER_MODE) {
+                ViolentNpcRegistry.init(serverRoot);
+            }
+
+            // Clean up and respawn NPCs after a short delay
             server.execute(() -> {
                 try {
-                    Thread.sleep(1000); // 1 second delay to ensure world is fully loaded
-                    LOGGER.info("[Scrubians] Initial NPC spawn on server start");
+                    Thread.sleep(1000); // 1 second delay
+                    LOGGER.info("[Scrubians] Starting NPC initialization on server start");
+
                     for (ServerWorld world : server.getWorlds()) {
+                        // Clean up existing violent NPCs first
+                        if (DEVELOPER_MODE) {
+                            ViolentNpcChunkCleanup.cleanupAllViolentNpcs(world);
+                        }
+
+                        // Spawn regular NPCs
                         respawnAllOnServerStart(world);
+
+                        // Spawn violent NPCs
+                        if (DEVELOPER_MODE) {
+                            ViolentNpcTracker.initializeAllNpcs(world);
+                        }
                     }
+
                     hasSpawnedNPCsOnStartup = true;
+                    LOGGER.info("[Scrubians] NPC initialization complete");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             });
         });
 
-        // Save periodically during server tick
+        // Chunk load/unload events
         ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
             LoadedChunkTracker.onLoad(world, chunk);
             ChunkLoadCleanup.onChunkLoad(world, chunk);
+
+            if (DEVELOPER_MODE) {
+                ViolentNpcChunkCleanup.onChunkLoad(world, chunk);
+            }
         });
 
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
             LoadedChunkTracker.onUnload(world, chunk);
         });
 
+        // Server tick events - FIXED: Properly wrapped in DEVELOPER_MODE check
         ServerTickEvents.START_SERVER_TICK.register(server -> {
-            for (ServerWorld world : server.getWorlds()) {
-                ViolentNpcEntity.tickFireImmunity(world);
-                ViolentNpcTracker.tick(world);
+            if (DEVELOPER_MODE) {
+                for (ServerWorld world : server.getWorlds()) {
+                    ViolentNpcEntity.tickFireImmunity(world);
+                    ViolentNpcTracker.tick(world);
+                }
             }
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             cleanupTickCounter++;
+
             // Run cleanup every 2 seconds (40 ticks)
             if (cleanupTickCounter >= 40) {
                 cleanupTickCounter = 0;
 
-                // Kill invalid NPCs (those without proper registry data)
+                // Kill invalid NPCs
                 for (ServerWorld world : server.getWorlds()) {
                     NpcKillInvalidCommand.killInvalidNPCs(world);
                 }
@@ -131,34 +146,32 @@ public class Scrubians implements ModInitializer {
 
                         if (chunk != null) {
                             ChunkLoadCleanup.onChunkLoad(world, chunk);
+
+                            if (DEVELOPER_MODE) {
+                                ViolentNpcChunkCleanup.onChunkLoad(world, chunk);
+                            }
                         }
                     }
                 }
-
-
-
             }
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             LOGGER.info("[Scrubians] Server stopping, saving NPC data...");
             NpcRegistry.forceSave();
-            hasSpawnedNPCsOnStartup = false; // Reset for next server start
-            ViolentNpcRegistry.forceSave();
-            ViolentNpcTracker.clear();
+            hasSpawnedNPCsOnStartup = false;
+
+            if (DEVELOPER_MODE) {
+                ViolentNpcRegistry.forceSave();
+                ViolentNpcTracker.clear();
+                ViolentNpcChunkCleanup.reset();
+            }
         });
 
         LOGGER.info("[Scrubians] Loaded");
     }
 
-    /**
-     * Gets config.
-     *
-     * @return the config
-     */
-
     public static void logger(String type, String log) {
-
         if (type.equalsIgnoreCase("warning")) {
             LOGGER.warn(log);
         } else if (type.equalsIgnoreCase("error")) {
@@ -167,8 +180,11 @@ public class Scrubians implements ModInitializer {
             LOGGER.info(log);
         }
     }
-    public static void logger(String log) {LOGGER.info(log);}
-    
+
+    public static void logger(String log) {
+        LOGGER.info(log);
+    }
+
     public static ScrubiansConfig getConfig() {
         return CONFIG;
     }
