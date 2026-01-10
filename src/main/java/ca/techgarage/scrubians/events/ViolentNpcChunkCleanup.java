@@ -48,7 +48,7 @@ public class ViolentNpcChunkCleanup {
             }
         });
 
-        // Remove invalid violent NPCs
+        // Remove invalid violent NPCs and notify tracker
         if (!toRemove.isEmpty()) {
             for (Entity entity : toRemove) {
                 String name = entity.getCustomName() != null ? entity.getCustomName().getString() : "Unknown";
@@ -56,6 +56,12 @@ public class ViolentNpcChunkCleanup {
 
                 Scrubians.logger("info", "[Scrubians] Chunk cleanup: Removing invalid violent NPC '" +
                         name + "' (ID: " + id + ") at " + entity.getEntityPos());
+
+                // Notify tracker BEFORE discarding
+//                if (id >= 0) {
+//                    ViolentNpcTracker.unregisterEntity(entity.getUuid(), id);
+//                }
+
                 entity.discard();
                 totalCleaned++;
             }
@@ -78,12 +84,19 @@ public class ViolentNpcChunkCleanup {
             }
         }
 
-        // Remove all violent NPCs
+        // Remove all violent NPCs and notify tracker
         for (Entity entity : toRemove) {
             String name = entity.getCustomName() != null ? entity.getCustomName().getString() : "Unknown";
             int id = ViolentNpcEntity.getNpcId(entity).orElse(-1);
+
             Scrubians.logger("info", "[Scrubians] Server start cleanup: Removing violent NPC '" +
                     name + "' (ID: " + id + ")");
+
+            // Notify tracker BEFORE discarding
+//            if (id >= 0) {
+//                ViolentNpcTracker.unregisterEntity(entity.getUuid(), id);
+//            }
+
             entity.discard();
         }
 

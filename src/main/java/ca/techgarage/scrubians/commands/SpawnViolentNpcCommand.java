@@ -388,7 +388,7 @@ public class SpawnViolentNpcCommand {
         int id = IntegerArgumentType.getInteger(ctx, "id");
         ServerWorld world = ctx.getSource().getWorld();
 
-        ViolentNpcTracker.despawnNpc(world, id);
+        ViolentNpcTracker.despawn(world, id);
         ctx.getSource().sendFeedback(() -> Text.literal("§aDespawned all entities for NPC #" + id), false);
 
         return 1;
@@ -426,7 +426,7 @@ public class SpawnViolentNpcCommand {
         int id = IntegerArgumentType.getInteger(ctx, "id");
         ServerWorld world = ctx.getSource().getWorld();
 
-        ViolentNpcTracker.despawnNpc(world, id);
+        ViolentNpcTracker.despawn(world, id);
         ViolentNpcRegistry.removeNpcById(id);
 
         ctx.getSource().sendFeedback(() -> Text.literal("§aRemoved violent NPC #" + id), false);

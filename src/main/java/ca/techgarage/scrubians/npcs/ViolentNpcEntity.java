@@ -83,9 +83,6 @@ public class ViolentNpcEntity {
 
         // Spawn the entity
         if (world.spawnEntity(entity)) {
-            Scrubians.logger("info", "[Scrubians] Spawned violent NPC #" + npcId +
-                    " (" + entityTypeString + ") at " + String.format("(%.1f, %.1f, %.1f)",
-                    spawnPos.x, spawnPos.y, spawnPos.z));
             return entity;
         }
 

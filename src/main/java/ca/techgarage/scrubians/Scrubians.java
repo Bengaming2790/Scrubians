@@ -28,7 +28,7 @@ public class Scrubians implements ModInitializer {
     public static ScrubiansConfig CONFIG;
     public static final String MOD_ID = "scrubians";
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    private static final boolean DEVELOPER_MODE = true;
+    private static final boolean DEVELOPER_MODE = false;
     private static int cleanupTickCounter = 0;
     private static boolean hasSpawnedNPCsOnStartup = false;
 
@@ -57,19 +57,18 @@ public class Scrubians implements ModInitializer {
 
         ViolentNpcEntityRegistration.register();
 
-        if (DEVELOPER_MODE) {
+
             logger("warning", "[Scrubians] Developer mode is ON - Initializing unreleased features.");
             CommandRegistrationCallback.EVENT.register(SpawnViolentNpcCommand::register);
-        }
+
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             File serverRoot = new File(".").getAbsoluteFile();
             LOGGER.info("[Scrubians] Server root directory: " + serverRoot.getAbsolutePath());
             NpcRegistry.init(serverRoot);
 
-            if (DEVELOPER_MODE) {
                 ViolentNpcRegistry.init(serverRoot);
-            }
+
 
             // Clean up and respawn NPCs after a short delay
             server.execute(() -> {
@@ -78,20 +77,10 @@ public class Scrubians implements ModInitializer {
                     LOGGER.info("[Scrubians] Starting NPC initialization on server start");
 
                     for (ServerWorld world : server.getWorlds()) {
-                        // Clean up existing violent NPCs first
-                        if (DEVELOPER_MODE) {
-                            ViolentNpcChunkCleanup.cleanupAllViolentNpcs(world);
-                        }
 
-                        // Spawn regular NPCs
+                        ViolentNpcTracker.initializeAllNpcs(world);
                         respawnAllOnServerStart(world);
-
-                        // Spawn violent NPCs
-                        if (DEVELOPER_MODE) {
-                            ViolentNpcTracker.initializeAllNpcs(world);
-                        }
                     }
-
                     hasSpawnedNPCsOnStartup = true;
                     LOGGER.info("[Scrubians] NPC initialization complete");
                 } catch (InterruptedException e) {
@@ -104,24 +93,16 @@ public class Scrubians implements ModInitializer {
         ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
             LoadedChunkTracker.onLoad(world, chunk);
             ChunkLoadCleanup.onChunkLoad(world, chunk);
-
-            if (DEVELOPER_MODE) {
-                ViolentNpcChunkCleanup.onChunkLoad(world, chunk);
-            }
+            ViolentNpcChunkCleanup.onChunkLoad(world, chunk);
         });
 
-        ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
-            LoadedChunkTracker.onUnload(world, chunk);
-        });
+        ServerChunkEvents.CHUNK_UNLOAD.register(LoadedChunkTracker::onUnload);
 
-        // Server tick events - FIXED: Properly wrapped in DEVELOPER_MODE check
         ServerTickEvents.START_SERVER_TICK.register(server -> {
-            if (DEVELOPER_MODE) {
                 for (ServerWorld world : server.getWorlds()) {
                     ViolentNpcEntity.tickFireImmunity(world);
                     ViolentNpcTracker.tick(world);
                 }
-            }
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -146,10 +127,7 @@ public class Scrubians implements ModInitializer {
 
                         if (chunk != null) {
                             ChunkLoadCleanup.onChunkLoad(world, chunk);
-
-                            if (DEVELOPER_MODE) {
-                                ViolentNpcChunkCleanup.onChunkLoad(world, chunk);
-                            }
+                            ViolentNpcChunkCleanup.onChunkLoad(world, chunk);
                         }
                     }
                 }
@@ -157,16 +135,16 @@ public class Scrubians implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            LOGGER.info("[Scrubians] Server stopping, saving NPC data...");
-            NpcRegistry.forceSave();
-            hasSpawnedNPCsOnStartup = false;
+            LOGGER.info("[Scrubians] Server stopping, despawning violent NPCs...");
 
-            if (DEVELOPER_MODE) {
-                ViolentNpcRegistry.forceSave();
-                ViolentNpcTracker.clear();
-                ViolentNpcChunkCleanup.reset();
+            for (ServerWorld world : server.getWorlds()) {
+                ViolentNpcTracker.despawnAllViolentNpcs(world);
             }
+
+            NpcRegistry.forceSave();
+            ViolentNpcRegistry.forceSave();
         });
+
 
         LOGGER.info("[Scrubians] Loaded");
     }

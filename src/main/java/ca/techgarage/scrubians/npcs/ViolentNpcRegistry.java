@@ -71,7 +71,7 @@ public final class ViolentNpcRegistry {
                     return Registries.ENTITY_TYPE.get(identifier);
                 }
             } catch (Exception e) {
-                System.err.println("[Scrubians] Invalid entity type: " + entityType);
+                Scrubians.logger("error","[Scrubians] Invalid entity type: " + entityType);
             }
             return EntityType.ZOMBIE; // Fallback
         }
