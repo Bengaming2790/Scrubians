@@ -106,7 +106,7 @@ All NPCs in Scrubians are **data-driven**.
 
 - [x] Standard NPC system
 - [x] Mannequin-based NPCs
-- [ ] Violent NPC AI & combat balancing
+- [X] Violent NPC AI & combat balancing
 - [ ] Mannequin support for Violent NPCs
 - [ ] Boss NPC framework
 - [ ] Boss health bars
