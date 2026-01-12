@@ -1,8 +1,8 @@
 package ca.techgarage.scrubians.commands;
 
 import ca.techgarage.scrubians.npcs.SelectionManager;
-import ca.techgarage.scrubians.npcs.ViolentNpcRegistry;
-import ca.techgarage.scrubians.npcs.ViolentNpcTracker;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcRegistry;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcTracker;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -264,7 +264,7 @@ public class SpawnViolentNpcCommand {
                 "§aCreated violent NPC #" + id + " §f(" + name + ")§a in selected area"
         ), false);
         ctx.getSource().sendFeedback(() -> Text.literal(
-                "§7Use §f/npc violent setstats " + id + " <health> <damage> <speed>§7 to configure"
+                "§7Use §f/npc violent setstats " + id + " <health> <damage> <speed (2.3 Default)>§7 to configure"
         ), false);
 
         return 1;

@@ -1,4 +1,4 @@
-package ca.techgarage.scrubians.npcs;
+package ca.techgarage.scrubians.npcs.violent;
 
 import ca.techgarage.scrubians.events.ViolentNpcDeathCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;

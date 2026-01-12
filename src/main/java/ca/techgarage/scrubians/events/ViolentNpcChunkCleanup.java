@@ -1,9 +1,9 @@
 package ca.techgarage.scrubians.events;
 
 import ca.techgarage.scrubians.Scrubians;
-import ca.techgarage.scrubians.npcs.ViolentNpcEntity;
-import ca.techgarage.scrubians.npcs.ViolentNpcRegistry;
-import ca.techgarage.scrubians.npcs.ViolentNpcTracker;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcEntity;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcRegistry;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcTracker;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Box;
@@ -91,12 +91,6 @@ public class ViolentNpcChunkCleanup {
 
             Scrubians.logger("info", "[Scrubians] Server start cleanup: Removing violent NPC '" +
                     name + "' (ID: " + id + ")");
-
-            // Notify tracker BEFORE discarding
-//            if (id >= 0) {
-//                ViolentNpcTracker.unregisterEntity(entity.getUuid(), id);
-//            }
-
             entity.discard();
         }
 

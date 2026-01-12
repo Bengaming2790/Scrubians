@@ -5,6 +5,10 @@ import ca.techgarage.scrubians.dialogue.DialogueActionCommand;
 import ca.techgarage.scrubians.events.ChunkLoadCleanup;
 import ca.techgarage.scrubians.events.ViolentNpcChunkCleanup;
 import ca.techgarage.scrubians.npcs.*;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcEntity;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcEntityRegistration;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcRegistry;
+import ca.techgarage.scrubians.npcs.violent.ViolentNpcTracker;
 import net.fabricmc.api.ModInitializer;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
@@ -51,6 +55,8 @@ public class Scrubians implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CleanupStatsCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcKillInvalidCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcHelpCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcRemoveCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcReloadCommand.register(dispatcher));
 
         AutoConfig.register(ScrubiansConfig.class, GsonConfigSerializer::new);
         CONFIG = AutoConfig.getConfigHolder(ScrubiansConfig.class).getConfig();
@@ -64,7 +70,7 @@ public class Scrubians implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             File serverRoot = new File(".").getAbsoluteFile();
-            LOGGER.info("[Scrubians] Server root directory: " + serverRoot.getAbsolutePath());
+            logger("[Scrubians] Server root directory: " + serverRoot.getAbsolutePath());
             NpcRegistry.init(serverRoot);
 
                 ViolentNpcRegistry.init(serverRoot);
@@ -73,8 +79,8 @@ public class Scrubians implements ModInitializer {
             // Clean up and respawn NPCs after a short delay
             server.execute(() -> {
                 try {
-                    Thread.sleep(1000); // 1 second delay
-                    LOGGER.info("[Scrubians] Starting NPC initialization on server start");
+                    Thread.sleep(1000);
+                    logger("[Scrubians] Starting NPC initialization on server start");
 
                     for (ServerWorld world : server.getWorlds()) {
 
@@ -82,7 +88,7 @@ public class Scrubians implements ModInitializer {
                         respawnAllOnServerStart(world);
                     }
                     hasSpawnedNPCsOnStartup = true;
-                    LOGGER.info("[Scrubians] NPC initialization complete");
+                    logger("[Scrubians] NPC initialization complete");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -135,7 +141,7 @@ public class Scrubians implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            LOGGER.info("[Scrubians] Server stopping, despawning violent NPCs...");
+            logger("[Scrubians] Server stopping, despawning violent NPCs...");
 
             for (ServerWorld world : server.getWorlds()) {
                 ViolentNpcTracker.despawnAllViolentNpcs(world);
@@ -146,7 +152,7 @@ public class Scrubians implements ModInitializer {
         });
 
 
-        LOGGER.info("[Scrubians] Loaded");
+        logger("[Scrubians] Loaded");
     }
 
     public static void logger(String type, String log) {

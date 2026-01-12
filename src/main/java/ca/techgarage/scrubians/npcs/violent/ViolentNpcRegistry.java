@@ -1,4 +1,4 @@
-package ca.techgarage.scrubians.npcs;
+package ca.techgarage.scrubians.npcs.violent;
 
 import ca.techgarage.scrubians.Scrubians;
 import com.google.gson.Gson;
@@ -153,9 +153,9 @@ public final class ViolentNpcRegistry {
          * Instantiates a new Stats.
          */
         public Stats() {
-            this.health = 20.0; // Default mob health
+            this.health = 20.0;
             this.attackDamage = 2.0;
-            this.speed = 1.0;
+            this.speed = 0.23;
             this.knockbackResistance = 0.0;
             this.followRange = 16.0;
             this.glowing = false;

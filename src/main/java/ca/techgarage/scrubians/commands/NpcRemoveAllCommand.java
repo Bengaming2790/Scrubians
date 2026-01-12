@@ -53,7 +53,7 @@ public class NpcRemoveAllCommand {
 
         source.sendFeedback(() -> Text.literal("§aRemoved " + count + " NPC(s) from the world"), true);
         source.sendFeedback(() -> Text.literal("§7Note: This only removes entities, not registry data"), false);
-        source.sendFeedback(() -> Text.literal("§7Use /npcrespawn all to respawn NPCs from registry"), false);
+        source.sendFeedback(() -> Text.literal("§7Use /npc respawn all to respawn NPCs from registry"), false);
 
         return count;
     }

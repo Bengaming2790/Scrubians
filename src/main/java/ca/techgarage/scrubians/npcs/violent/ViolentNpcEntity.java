@@ -1,4 +1,4 @@
-package ca.techgarage.scrubians.npcs;
+package ca.techgarage.scrubians.npcs.violent;
 
 import ca.techgarage.scrubians.Scrubians;
 import net.minecraft.component.DataComponentTypes;

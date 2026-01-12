@@ -134,7 +134,6 @@ public class DialogueSessionManager {
 
     /**
      * Handle option click from chat
-     * SECURITY: Only actions present in the current dialogue page can be executed
      */
     public static void handleOptionClick(ServerPlayerEntity player, String actionId) {
         DialogueSession session = getSession(player);

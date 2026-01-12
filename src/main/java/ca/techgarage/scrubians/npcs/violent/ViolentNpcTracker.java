@@ -1,6 +1,5 @@
-package ca.techgarage.scrubians.npcs;
+package ca.techgarage.scrubians.npcs.violent;
 
-import ca.techgarage.scrubians.Scrubians;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
