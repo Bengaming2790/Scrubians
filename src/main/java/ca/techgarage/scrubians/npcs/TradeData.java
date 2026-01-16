@@ -30,7 +30,7 @@ public class TradeData {
             this.firstCost = firstCost;
             this.secondCost = secondCost;
             if (maxUses == 999) {
-                maxUses = Integer.MAX_VALUE;
+                this.maxUses = Integer.MAX_VALUE;
             } else {
                 this.maxUses = maxUses;
             }
@@ -79,7 +79,8 @@ public class TradeData {
 
         @Override
         public ItemStack deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            if (json.isJsonNull()) {
+            // Add null check FIRST
+            if (json == null || json.isJsonNull()) {
                 return ItemStack.EMPTY;
             }
 
@@ -88,7 +89,6 @@ public class TradeData {
             if (obj.has("nbt")) {
                 try {
                     String nbtString = obj.get("nbt").getAsString();
-                    // Change this line:
                     NbtCompound nbt = StringNbtReader.readCompound(nbtString);
                     return ItemStack.CODEC.decode(NbtOps.INSTANCE, nbt)
                             .getOrThrow().getFirst();
