@@ -3,6 +3,7 @@ package ca.techgarage.scrubians.commands;
 import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.PathEditorSession;
+import ca.techgarage.scrubians.npcs.TradeEditorGui;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -82,9 +83,15 @@ public class NpcEditCommand {
                                                                         )
                                                                 )
                                                         )
+                                                        .then(CommandManager.literal("trader")
+                                                                .executes(NpcEditCommand::openTradeEditor)
+                                                                 .then(CommandManager.literal("confirm")
+                                                                         .executes(NpcEditCommand::openTradeEditorConfirm)
+                                                                )
                                         ).requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.edit") // Requires OP level 2)
                                 )
                         )
+                )
         );
     }
 
@@ -126,7 +133,7 @@ public class NpcEditCommand {
         int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
         ServerCommandSource source = ctx.getSource();
 
-        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity)) {
+        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity player)) {
             source.sendError(Text.literal("§cThis command must be run by a player!"));
             return 0;
         }
@@ -137,7 +144,6 @@ public class NpcEditCommand {
             return 0;
         }
 
-        ServerPlayerEntity player = (ServerPlayerEntity) source.getEntity();
         PathEditorSession.start(player, npcId);
 
         source.sendFeedback(() -> Text.literal("§a§l=== Path Editor Started ==="), false);
@@ -157,12 +163,11 @@ public class NpcEditCommand {
         int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
         ServerCommandSource source = ctx.getSource();
 
-        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity)) {
+        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity player)) {
             source.sendError(Text.literal("§cThis command must be run by a player!"));
             return 0;
         }
 
-        ServerPlayerEntity player = (ServerPlayerEntity) source.getEntity();
         var sessionOpt = PathEditorSession.getSession(player);
 
         if (sessionOpt.isEmpty()) {
@@ -191,12 +196,11 @@ public class NpcEditCommand {
         int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
         ServerCommandSource source = ctx.getSource();
 
-        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity)) {
+        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity player)) {
             source.sendError(Text.literal("§cThis command must be run by a player!"));
             return 0;
         }
 
-        ServerPlayerEntity player = (ServerPlayerEntity) source.getEntity();
         var sessionOpt = PathEditorSession.getSession(player);
 
         if (sessionOpt.isEmpty()) {
@@ -223,12 +227,11 @@ public class NpcEditCommand {
         int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
         ServerCommandSource source = ctx.getSource();
 
-        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity)) {
+        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity player)) {
             source.sendError(Text.literal("§cThis command must be run by a player!"));
             return 0;
         }
 
-        ServerPlayerEntity player = (ServerPlayerEntity) source.getEntity();
         var sessionOpt = PathEditorSession.getSession(player);
 
         if (sessionOpt.isEmpty()) {
@@ -256,12 +259,11 @@ public class NpcEditCommand {
         int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
         ServerCommandSource source = ctx.getSource();
 
-        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity)) {
+        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity player)) {
             source.sendError(Text.literal("§cThis command must be run by a player!"));
             return 0;
         }
 
-        ServerPlayerEntity player = (ServerPlayerEntity) source.getEntity();
         var sessionOpt = PathEditorSession.getSession(player);
 
         if (sessionOpt.isEmpty()) {
@@ -296,12 +298,11 @@ public class NpcEditCommand {
         int ticks = IntegerArgumentType.getInteger(ctx, "ticks");
         ServerCommandSource source = ctx.getSource();
 
-        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity)) {
+        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity player)) {
             source.sendError(Text.literal("§cThis command must be run by a player!"));
             return 0;
         }
 
-        ServerPlayerEntity player = (ServerPlayerEntity) source.getEntity();
         var sessionOpt = PathEditorSession.getSession(player);
 
         if (sessionOpt.isEmpty()) {
@@ -321,4 +322,68 @@ public class NpcEditCommand {
 
         return 1;
     }
+
+
+
+    private static int openTradeEditor(CommandContext<ServerCommandSource> ctx) {
+        int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
+        ServerCommandSource source = ctx.getSource();
+
+        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity player)) {
+            source.sendError(Text.literal("§cThis command must be run by a player!"));
+            return 0;
+        }
+
+        var npc = NpcRegistry.getNpcById(npcId);
+        if (npc.isEmpty()) {
+            source.sendError(Text.literal("§cNPC with ID " + npcId + " not found!"));
+            return 0;
+        }
+
+        // Check if NPC has dialogue
+        if (NpcRegistry.hasDialogue(npcId)) {
+            source.sendError(Text.literal("§c⚠ WARNING: This NPC has dialogue configured!"));
+            source.sendError(Text.literal("§cSetting up trades will DELETE the dialogue."));
+            source.sendError(Text.literal("§cUse §6/npc edit " + npcId + " trader confirm §cto proceed."));
+            return 0;
+        }
+
+        // Open the trade editor GUI
+        TradeEditorGui gui = new TradeEditorGui(player, npcId);
+        gui.open();
+
+        source.sendFeedback(() -> Text.literal("§aOpened trade editor for NPC #" + npcId), false);
+        return 1;
+    }
+
+    private static int openTradeEditorConfirm(CommandContext<ServerCommandSource> ctx) {
+        int npcId = IntegerArgumentType.getInteger(ctx, "npcId");
+        ServerCommandSource source = ctx.getSource();
+
+        if (source.getEntity() == null || !(source.getEntity() instanceof ServerPlayerEntity player)) {
+            source.sendError(Text.literal("§cThis command must be run by a player!"));
+            return 0;
+        }
+
+        var npc = NpcRegistry.getNpcById(npcId);
+        if (npc.isEmpty()) {
+            source.sendError(Text.literal("§cNPC with ID " + npcId + " not found!"));
+            return 0;
+        }
+
+        // Delete dialogue if present
+        if (NpcRegistry.hasDialogue(npcId)) {
+            NpcRegistry.setDialogue(npcId, null);
+            source.sendFeedback(() -> Text.literal("§eDeleted dialogue for NPC #" + npcId), true);
+        }
+
+        // Open the trade editor GUI
+        TradeEditorGui gui = new TradeEditorGui(player, npcId);
+        gui.open();
+
+        source.sendFeedback(() -> Text.literal("§aOpened trade editor for NPC #" + npcId + " (" + npc.get().name + ")"), false);
+        return 1;
+    }
+
+
 }

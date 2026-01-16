@@ -10,6 +10,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
@@ -288,7 +289,21 @@ public class TrackingMannequinEntity extends MannequinEntity {
             // Update last interaction time
             LAST_INTERACTION.put(player.getUuid(), currentTime);
 
-            // Load dialogue from registry
+            var npcDataOpt = NpcRegistry.getNpcById(this.npcId);
+            if (npcDataOpt.isEmpty()) {
+                player.sendMessage(Text.literal("§cNPC data not found!"), false);
+                return ActionResult.SUCCESS;
+            }
+
+            var npcData = npcDataOpt.get();
+
+            // Check if NPC has trades - priority over dialogue
+            if (npcData.getTradeData() != null && !npcData.getTradeData().trades.isEmpty()) {
+                TradeGui.open(serverPlayer, this.npcId);
+                return ActionResult.SUCCESS;
+            }
+
+            // Otherwise check for dialogue
             NPCDialogue dialogue = createDialogue();
 
             if (dialogue == null || dialogue.getPages().isEmpty()) {
@@ -296,7 +311,7 @@ public class TrackingMannequinEntity extends MannequinEntity {
                 return ActionResult.SUCCESS;
             }
 
-            // Start dialogue session (this handles sending internally)
+            // Start dialogue session
             DialogueSessionManager.startDialogue(serverPlayer, this.npcId, dialogue);
 
             return ActionResult.SUCCESS;

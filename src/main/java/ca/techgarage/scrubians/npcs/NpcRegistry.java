@@ -4,6 +4,7 @@ import ca.techgarage.scrubians.Scrubians;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 
 import java.io.File;
@@ -23,34 +24,27 @@ public final class NpcRegistry {
     private static final List<NpcData> NPC_LIST = new ArrayList<>();
     private static int NEXT_ID = 0;
     private static File saveFile;
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    // Register custom serializers for ItemStack and Trade
+    private static final Gson GSON = new GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(ItemStack.class, new TradeData.ItemStackSerializer())
+            .registerTypeAdapter(TradeData.Trade.class, new TradeData.TradeSerializer())
+            .create();
+
     private static boolean needsSave = false;
     private static long lastSaveTime = 0;
-    private static final long SAVE_INTERVAL_MS = 30000; // Save every 30 seconds if needed
+    private static final long SAVE_INTERVAL_MS = 30000;
 
-    /**
-     * The type Npc data.
-     */
     public static class NpcData {
-
         public int id;
-
         public String name;
-
         public double x, y, z;
-
         public String skin;
-
         public List<Waypoint> path;
-
         public DialogueData dialogue;
+        public TradeData tradeData;  // REMOVED 'static' keyword!
 
-        /**
-         * Instantiates a new Npc data.
-         * @param id       the id
-         * @param name     the name
-         * @param position the position
-         */
         public NpcData(int id, String name, Vec3d position) {
             this.id = id;
             this.name = name;
@@ -60,60 +54,39 @@ public final class NpcRegistry {
             this.skin = null;
             this.path = new ArrayList<>();
             this.dialogue = null;
+            this.tradeData = null;  // Initialize as null
         }
 
-        /**
-         * Gets position.
-         *
-         * @return the position
-         */
+        public TradeData getTradeData() {
+            return tradeData;
+        }
+
+        public void setTradeData(TradeData tradeData) {
+            this.tradeData = tradeData;
+        }
+
         public Vec3d getPosition() {
             return new Vec3d(x, y, z);
         }
 
-        /**
-         * Sets position.
-         *
-         * @param pos the pos
-         */
         public void setPosition(Vec3d pos) {
             this.x = pos.x;
             this.y = pos.y;
             this.z = pos.z;
         }
 
-        /**
-         * Gets path.
-         *
-         * @return the path
-         */
         public List<Waypoint> getPath() {
             return path != null ? path : new ArrayList<>();
         }
 
-        /**
-         * Sets path.
-         *
-         * @param newPath the new path
-         */
         public void setPath(List<Waypoint> newPath) {
             this.path = newPath != null ? newPath : new ArrayList<>();
         }
 
-        /**
-         * Gets dialogue.
-         *
-         * @return the dialogue
-         */
         public DialogueData getDialogue() {
             return dialogue;
         }
 
-        /**
-         * Sets dialogue.
-         *
-         * @param dialogue the dialogue
-         */
         public void setDialogue(DialogueData dialogue) {
             this.dialogue = dialogue;
         }
@@ -204,6 +177,10 @@ public final class NpcRegistry {
 
             public String text;
 
+
+            /**
+             * Action IDs -- 'close' closes the dialogue - 'next' proceeds to next page - {Integer pageNumber} Sets the page to the page number provoded - 'run_{command spaces replaced with _}' This allows any command to be ran PLEASE do not allow non-trusted users to have access (possible force-op).
+             */
             public String action;
             public DialogueOptionData() {}
 
@@ -225,24 +202,17 @@ public final class NpcRegistry {
      *
      * @param serverRoot the server root
      */
-// Must be called once per world
     public static void init(File serverRoot) {
-        // Use the actual server root directory (where the JAR is)
-        // serverRoot from getRunDirectory() should already be the right place
         File scrubiansFolder = new File(serverRoot, ".scrubians");
         if (!scrubiansFolder.exists()) {
             Scrubians.logger("info","[Scrubians] Creating .scrubians folder at: " + scrubiansFolder.getAbsolutePath());
             scrubiansFolder.mkdirs();
-        } else {
-            Scrubians.logger("info","[Scrubians] .scrubians folder exists at: " + scrubiansFolder.getAbsolutePath());
         }
 
         File dataFolder = new File(scrubiansFolder, "data");
         if (!dataFolder.exists()) {
             Scrubians.logger("info","[Scrubians] Creating data folder at: " + dataFolder.getAbsolutePath());
             dataFolder.mkdirs();
-        } else {
-            Scrubians.logger("info","[Scrubians] data folder exists at: " + dataFolder.getAbsolutePath());
         }
 
         saveFile = new File(dataFolder, "scrubians_npcs.json");
@@ -260,6 +230,10 @@ public final class NpcRegistry {
                         if (npc.id >= NEXT_ID) NEXT_ID = npc.id + 1;
                         // Ensure path is initialized
                         if (npc.path == null) npc.path = new ArrayList<>();
+                        // Ensure trade data trades list is initialized
+                        if (npc.tradeData != null && npc.tradeData.trades == null) {
+                            npc.tradeData.trades = new ArrayList<>();
+                        }
                     }
                     Scrubians.logger("info","[Scrubians] Loaded " + NPC_LIST.size() + " NPCs from JSON");
                 }
@@ -267,7 +241,6 @@ public final class NpcRegistry {
                 Scrubians.logger("info","[Scrubians] ERROR: Corrupted JSON file detected!");
                 Scrubians.logger("error","[Scrubians] Creating backup and starting fresh...");
 
-                // Create backup of corrupted file
                 File backup = new File(dataFolder, "scrubians_npcs_corrupted_" + System.currentTimeMillis() + ".json");
                 try {
                     java.nio.file.Files.copy(saveFile.toPath(), backup.toPath());
@@ -276,7 +249,6 @@ public final class NpcRegistry {
                     Scrubians.logger("error","[Scrubians] Failed to create backup: " + backupError.getMessage());
                 }
 
-                // Start fresh
                 NPC_LIST.clear();
                 NEXT_ID = 0;
                 save();
@@ -297,7 +269,6 @@ public final class NpcRegistry {
         }
 
         try {
-            // Use Files.write for better cross-platform compatibility
             String json = GSON.toJson(NPC_LIST);
             java.nio.file.Files.write(saveFile.toPath(), json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             Scrubians.logger("info","[Scrubians] Saved " + NPC_LIST.size() + " NPCs to: " + saveFile.getAbsolutePath());
@@ -511,4 +482,36 @@ public final class NpcRegistry {
         NPC_LIST.clear();
         forceSave();
     }
+
+
+
+        public static void setTradeData(int id, TradeData tradeData) {
+            for (NpcData npc : NPC_LIST) {
+                if (npc.id == id) {
+                    npc.setTradeData(tradeData);
+                    forceSave();
+                    return;
+                }
+            }
+        }
+
+    public static boolean hasTrades(int id) {
+        var npcOpt = getNpcById(id);
+        if (npcOpt.isEmpty()) return false;
+
+        TradeData tradeData = npcOpt.get().getTradeData();
+        return tradeData != null && tradeData.trades != null && !tradeData.trades.isEmpty();
+    }
+
+    public static boolean hasDialogue(int id) {
+        var npcOpt = getNpcById(id);
+        if (npcOpt.isEmpty()) return false;
+
+        DialogueData dialogue = npcOpt.get().getDialogue();
+        return dialogue != null && dialogue.pages != null && !dialogue.pages.isEmpty();
+    }
+
+
+
+
 }
