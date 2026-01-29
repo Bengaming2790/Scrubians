@@ -32,7 +32,7 @@ public class Scrubians implements ModInitializer {
     public static ScrubiansConfig CONFIG;
     public static final String MOD_ID = "scrubians";
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    private static final boolean DEVELOPER_MODE = false;
+    public static final boolean DEVELOPER_MODE = false;
     private static int cleanupTickCounter = 0;
     private static boolean hasSpawnedNPCsOnStartup = false;
 

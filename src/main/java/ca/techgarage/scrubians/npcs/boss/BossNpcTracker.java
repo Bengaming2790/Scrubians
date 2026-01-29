@@ -1,5 +1,7 @@
-package ca.techgarage.scrubians.npcs.violent;
+package ca.techgarage.scrubians.npcs.boss;
 
+import ca.techgarage.scrubians.npcs.boss.BossNpcEntity;
+import ca.techgarage.scrubians.npcs.boss.BossNpcRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
@@ -7,34 +9,41 @@ import net.minecraft.util.math.Vec3d;
 import java.util.*;
 
 /**
- * Tracker for violent NPCs with hybrid mode support
+ * The type Violent npc tracker.
  */
-public class ViolentNpcTracker {
+public class BossNpcTracker {
 
     private static final Map<UUID, Integer> ENTITY_TO_NPC_ID = new HashMap<>();
     private static final Map<Integer, List<UUID>> NPC_ID_TO_ENTITIES = new HashMap<>();
     private static final Map<Integer, Integer> RESPAWN_TIMERS = new HashMap<>();
 
     /**
-     * Register entity
+     * Register entity.
+     *
+     * @param entity the entity
+     * @param npcId  the npc id
      */
     public static void registerEntity(Entity entity, int npcId) {
         UUID uuid = entity.getUuid();
         ENTITY_TO_NPC_ID.put(uuid, npcId);
         NPC_ID_TO_ENTITIES.computeIfAbsent(npcId, k -> new ArrayList<>()).add(uuid);
+
     }
 
     /**
-     * Initialize all npcs
+     * Initialize all npcs.
+     *
+     * @param world the world
      */
     public static void initializeAllNpcs(ServerWorld world) {
+
         if (world.getPlayers().isEmpty()) {
             return;
         }
 
         rebuildFromWorld(world);
 
-        for (ViolentNpcRegistry.ViolentNpcData npcData : ViolentNpcRegistry.getAllNpcs()) {
+        for (BossNpcRegistry.BossNpcData npcData : BossNpcRegistry.getAllNpcs()) {
             if (npcData.spawnArea == null) continue;
 
             int current = getCurrentCount(world, npcData.id);
@@ -46,6 +55,7 @@ public class ViolentNpcTracker {
 
             int needed = max - current;
 
+
             for (int i = 0; i < needed; i++) {
                 if (!spawnNpc(world, npcData.id)) {
                     break;
@@ -55,7 +65,10 @@ public class ViolentNpcTracker {
     }
 
     /**
-     * Despawn all entities for an NPC
+     * Despawn.
+     *
+     * @param world the world
+     * @param npcId the npc id
      */
     public static void despawn(ServerWorld world, int npcId) {
         RESPAWN_TIMERS.put(npcId, 20 * 10); // respawn in 10s
@@ -65,21 +78,6 @@ public class ViolentNpcTracker {
             for (UUID uuid : new ArrayList<>(entities)) {
                 Entity entity = world.getEntity(uuid);
                 if (entity != null) {
-                    // If this is an AI entity in hybrid mode, also remove display entity
-                    if (ViolentNpcEntity.isAiEntity(entity)) {
-                        Entity displayEntity = ViolentNpcEntity.getDisplayEntity(world, entity);
-                        if (displayEntity != null) {
-                            displayEntity.discard();
-                        }
-                    }
-                    // If this is a display entity, also remove AI entity
-                    else if (ViolentNpcEntity.isDisplayEntity(entity)) {
-                        Entity aiEntity = ViolentNpcEntity.getAiEntity(world, entity);
-                        if (aiEntity != null) {
-                            aiEntity.discard();
-                        }
-                    }
-
                     entity.discard();
                 }
             }
@@ -89,25 +87,9 @@ public class ViolentNpcTracker {
         NPC_ID_TO_ENTITIES.remove(npcId);
     }
 
-    /**
-     * Despawn all violent NPCs
-     */
-    public static void despawnAllViolentNpcs(ServerWorld world) {
+    public static void despawnAllBossNpcs(ServerWorld world) {
         for (Entity entity : world.iterateEntities()) {
-            if (ViolentNpcEntity.isViolentNpc(entity)) {
-                // If hybrid mode, clean up both entities
-                if (ViolentNpcEntity.isAiEntity(entity)) {
-                    Entity displayEntity = ViolentNpcEntity.getDisplayEntity(world, entity);
-                    if (displayEntity != null) {
-                        displayEntity.discard();
-                    }
-                } else if (ViolentNpcEntity.isDisplayEntity(entity)) {
-                    Entity aiEntity = ViolentNpcEntity.getAiEntity(world, entity);
-                    if (aiEntity != null) {
-                        aiEntity.discard();
-                    }
-                }
-
+            if (BossNpcEntity.isBossNpc(entity)) {
                 entity.discard();
             }
         }
@@ -115,11 +97,14 @@ public class ViolentNpcTracker {
         ENTITY_TO_NPC_ID.clear();
         NPC_ID_TO_ENTITIES.clear();
         RESPAWN_TIMERS.clear();
-        ViolentNpcEntity.clearHybridTracking();
     }
 
+
     /**
-     * Unregister entity
+     * Unregister entity.
+     *
+     * @param entityUuid the entity uuid
+     * @param npcId      the npc id
      */
     public static void unregisterEntity(UUID entityUuid, int npcId) {
         ENTITY_TO_NPC_ID.remove(entityUuid);
@@ -130,31 +115,17 @@ public class ViolentNpcTracker {
     }
 
     /**
-     * Notify NPC death
+     * Notify npc death.
+     *
+     * @param world      the world
+     * @param npcId      the npc id
+     * @param entityUuid the entity uuid
      */
     public static void notifyNpcDeath(ServerWorld world, int npcId, UUID entityUuid) {
-        // Get the entity to check if it's hybrid mode
-        Entity deadEntity = world.getEntity(entityUuid);
-
-        // If this is a display entity death, we need to kill the AI entity too
-        if (deadEntity != null && ViolentNpcEntity.isDisplayEntity(deadEntity)) {
-            Entity aiEntity = ViolentNpcEntity.getAiEntity(world, deadEntity);
-            if (aiEntity != null && aiEntity.isAlive()) {
-                aiEntity.kill(world);
-            }
-        }
-        // If this is an AI entity death, kill the display entity
-        else if (deadEntity != null && ViolentNpcEntity.isAiEntity(deadEntity)) {
-            Entity displayEntity = ViolentNpcEntity.getDisplayEntity(world, deadEntity);
-            if (displayEntity != null && displayEntity.isAlive()) {
-                displayEntity.discard(); // Use discard instead of kill to avoid triggering death event
-            }
-        }
-
         unregisterEntity(entityUuid, npcId);
 
-        Optional<ViolentNpcRegistry.ViolentNpcData> npcDataOpt =
-                ViolentNpcRegistry.getNpcById(Optional.of(npcId));
+        Optional<BossNpcRegistry.BossNpcData> npcDataOpt =
+                BossNpcRegistry.getNpcById(Optional.of(npcId));
 
         if (npcDataOpt.isEmpty()) return;
         var npcData = npcDataOpt.get();
@@ -170,16 +141,15 @@ public class ViolentNpcTracker {
     }
 
     /**
-     * Main tick function
+     * Tick.
+     *
+     * @param world the world
      */
     public static void tick(ServerWorld world) {
+
         if (world.getPlayers().isEmpty()) {
             return;
         }
-
-        // Tick hybrid NPCs (sync display entities with AI entities)
-        ViolentNpcEntity.tickHybridNpcs(world);
-
         // Tick respawn timers
         Iterator<Map.Entry<Integer, Integer>> it = RESPAWN_TIMERS.entrySet().iterator();
         List<Integer> toSpawn = new ArrayList<>();
@@ -202,7 +172,7 @@ public class ViolentNpcTracker {
 
         // Periodic spawn verification
         if (world.getTime() % 100 == 0) {
-            for (var npcData : ViolentNpcRegistry.getAllNpcs()) {
+            for (var npcData : BossNpcRegistry.getAllNpcs()) {
                 if (npcData.spawnArea == null) continue;
                 if (RESPAWN_TIMERS.containsKey(npcData.id)) continue;
 
@@ -221,22 +191,15 @@ public class ViolentNpcTracker {
         }
     }
 
-    /**
-     * Get current count - only counts AI entities (or standard entities)
-     * Display entities in hybrid mode are not counted separately
-     */
     private static int getCurrentCount(ServerWorld world, int npcId) {
         int count = 0;
 
         for (Entity entity : world.iterateEntities()) {
             if (!entity.isAlive()) continue;
-            if (!ViolentNpcEntity.isViolentNpc(entity)) continue;
+            if (!BossNpcEntity.isBossNpc(entity)) continue;
 
-            // Skip display entities - only count AI entities or standard entities
-            if (ViolentNpcEntity.isDisplayEntity(entity)) continue;
-
-            Optional<Integer> entityNpcId = ViolentNpcEntity.getNpcId(entity);
-            if (entityNpcId.isPresent() && entityNpcId.get() == npcId) {
+            Optional<Integer> id = BossNpcEntity.getNpcId(entity);
+            if (id.isPresent() && id.get() == npcId) {
                 count++;
             }
         }
@@ -244,12 +207,22 @@ public class ViolentNpcTracker {
         return count;
     }
 
+    private static int getCurrentCountCached(int npcId) {
+        List<UUID> list = NPC_ID_TO_ENTITIES.get(npcId);
+        return list == null ? 0 : list.size();
+    }
+
+
     /**
-     * Spawn an NPC
+     * Spawns npc.
+     *
+     * @param world the world
+     * @param npcId the npc id
+     * @return the boolean
      */
     public static boolean spawnNpc(ServerWorld world, int npcId) {
-        Optional<ViolentNpcRegistry.ViolentNpcData> npcDataOpt =
-                ViolentNpcRegistry.getNpcById(Optional.of(npcId));
+        Optional<BossNpcRegistry.BossNpcData> npcDataOpt =
+                BossNpcRegistry.getNpcById(Optional.of(npcId));
 
         if (npcDataOpt.isEmpty()) return false;
         var npcData = npcDataOpt.get();
@@ -260,30 +233,19 @@ public class ViolentNpcTracker {
         if (current >= npcData.spawnArea.maxCount) return false;
 
         Vec3d pos = npcData.spawnArea.getRandomPosition();
-        Entity entity = ViolentNpcEntity.spawnViolentNpc(
+        Entity entity = BossNpcEntity.spawnBossNpc(
                 world, npcId, npcData.entityType, pos
         );
 
         if (entity != null) {
             registerEntity(entity, npcId);
-
-            // If hybrid mode, also register the display entity
-            if (ViolentNpcEntity.isAiEntity(entity)) {
-                Entity displayEntity = ViolentNpcEntity.getDisplayEntity(world, entity);
-                if (displayEntity != null) {
-                    registerEntity(displayEntity, npcId);
-                }
-            }
-
             return true;
         }
 
         return false;
     }
 
-    /**
-     * Cleanup dead entities
-     */
+
     private static void cleanupDeadEntities(ServerWorld world) {
         List<UUID> toRemove = new ArrayList<>();
 
@@ -304,27 +266,28 @@ public class ViolentNpcTracker {
     }
 
     /**
-     * Rebuild from world
+     * Rebuild from world.
+     *
+     * @param world the world
      */
     public static void rebuildFromWorld(ServerWorld world) {
         ENTITY_TO_NPC_ID.clear();
         NPC_ID_TO_ENTITIES.clear();
 
         for (Entity entity : world.iterateEntities()) {
-            if (ViolentNpcEntity.isViolentNpc(entity)) {
-                ViolentNpcEntity.getNpcId(entity)
+            if (BossNpcEntity.isBossNpc(entity)) {
+                BossNpcEntity.getNpcId(entity)
                         .ifPresent(id -> registerEntity(entity, id));
             }
         }
     }
 
     /**
-     * Clear all data
+     * Clear.
      */
     public static void clear() {
         ENTITY_TO_NPC_ID.clear();
         NPC_ID_TO_ENTITIES.clear();
         RESPAWN_TIMERS.clear();
-        ViolentNpcEntity.clearHybridTracking();
     }
 }

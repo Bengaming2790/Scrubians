@@ -19,4 +19,7 @@ public class ScrubiansConfig implements ConfigData {
     @ConfigEntry.BoundedDiscrete(min = 0, max = 40)
     public int defaultNPCWaitTimeInTicks = 20;
 
+    @ConfigEntry.Gui.Tooltip
+    public boolean npcHasNothingtoSayMessage = true;
+
 }

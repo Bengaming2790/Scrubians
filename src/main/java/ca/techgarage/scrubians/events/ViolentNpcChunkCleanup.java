@@ -39,7 +39,7 @@ public class ViolentNpcChunkCleanup {
         world.getEntitiesByClass(Entity.class, chunkBox, entity -> true).forEach(entity -> {
             // Check if it's a violent NPC
             if (ViolentNpcEntity.isViolentNpc(entity)) {
-                int npcId = ViolentNpcEntity.getNpcId(entity).orElse(-1);
+                int npcId = (int) ViolentNpcEntity.getNpcId(entity).orElse(-1);
 
                 // Check if ID is invalid or not in registry
                 if (npcId < 0 || ViolentNpcRegistry.getNpcById(Optional.of(npcId)).isEmpty()) {
@@ -52,7 +52,7 @@ public class ViolentNpcChunkCleanup {
         if (!toRemove.isEmpty()) {
             for (Entity entity : toRemove) {
                 String name = entity.getCustomName() != null ? entity.getCustomName().getString() : "Unknown";
-                int id = ViolentNpcEntity.getNpcId(entity).orElse(-1);
+                int id = (int) ViolentNpcEntity.getNpcId(entity).orElse(-1);
 
                 Scrubians.logger("info", "[Scrubians] Chunk cleanup: Removing invalid violent NPC '" +
                         name + "' (ID: " + id + ") at " + entity.getEntityPos());
@@ -87,7 +87,7 @@ public class ViolentNpcChunkCleanup {
         // Remove all violent NPCs and notify tracker
         for (Entity entity : toRemove) {
             String name = entity.getCustomName() != null ? entity.getCustomName().getString() : "Unknown";
-            int id = ViolentNpcEntity.getNpcId(entity).orElse(-1);
+            int id = (int) ViolentNpcEntity.getNpcId(entity).orElse(-1);
 
             Scrubians.logger("info", "[Scrubians] Server start cleanup: Removing violent NPC '" +
                     name + "' (ID: " + id + ")");

@@ -2,12 +2,13 @@ package ca.techgarage.scrubians.npcs.violent;
 
 import ca.techgarage.scrubians.events.ViolentNpcDeathCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.Optional;
 
 /**
- * Event handler for violent NPC deaths
+ * Event handler for violent NPC deaths with hybrid mode support
  * Register this in your mod initialization
  */
 public class ViolentNpcEntityRegistration {
@@ -20,22 +21,33 @@ public class ViolentNpcEntityRegistration {
         // Listen for entity deaths
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (entity.getEntityWorld() instanceof ServerWorld serverWorld) {
-                // Check if this is a violent NPC using the spawner
+                // Check if this is a violent NPC
                 if (ViolentNpcEntity.isViolentNpc(entity)) {
                     int npcId = ViolentNpcEntity.getNpcId(entity).orElse(-1);
 
                     if (npcId != -1) {
+                        // Only trigger death for AI entities or standard entities
+                        // Display entities deaths are handled when AI entity dies
+                        if (ViolentNpcEntity.isDisplayEntity(entity)) {
+                            // Display entity died - kill the AI entity too
+                            Entity aiEntity = ViolentNpcEntity.getAiEntity(serverWorld, entity);
+                            if (aiEntity != null && aiEntity.isAlive()) {
+                                aiEntity.kill(serverWorld);
+                            }
+                            return; // Don't process death callback for display entity
+                        }
+
                         // Get NPC data for the event
                         Optional<ViolentNpcRegistry.ViolentNpcData> npcDataOpt =
                                 ViolentNpcRegistry.getNpcById(Optional.of(npcId));
 
                         String name = "Unknown";
-                        String entityType = String.valueOf(ViolentNpcEntity.getBaseType(entity));
+                        String entityType = ViolentNpcEntity.getBaseType(entity).orElse("unknown");
 
                         if (npcDataOpt.isPresent()) {
                             ViolentNpcRegistry.ViolentNpcData npcData = npcDataOpt.get();
                             name = npcData.name;
-                            if (entityType.isEmpty()) {
+                            if (entityType.equals("unknown") || entityType.equals("zombie_ai")) {
                                 entityType = npcData.entityType;
                             }
                         }

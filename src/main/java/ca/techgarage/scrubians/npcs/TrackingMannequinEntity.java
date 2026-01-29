@@ -307,7 +307,9 @@ public class TrackingMannequinEntity extends MannequinEntity {
             NPCDialogue dialogue = createDialogue();
 
             if (dialogue == null || dialogue.getPages().isEmpty()) {
-                player.sendMessage(net.minecraft.text.Text.literal("§7*" + this.getCustomName().getString() + " has nothing to say*"), false);
+                if (Scrubians.CONFIG.npcHasNothingtoSayMessage) {
+                    player.sendMessage(net.minecraft.text.Text.literal("§7*" + this.getCustomName().getString() + " has nothing to say*"), false);
+                }
                 return ActionResult.SUCCESS;
             }
 

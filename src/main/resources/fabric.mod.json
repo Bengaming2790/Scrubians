@@ -14,7 +14,7 @@
       "ca.techgarage.scrubians.Scrubians"
     ]
   },
-  "mixins": [],
+  "mixins": ["scrubians.mixins.json"],
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
