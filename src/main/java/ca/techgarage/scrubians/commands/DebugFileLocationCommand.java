@@ -3,6 +3,7 @@ package ca.techgarage.scrubians.commands;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -14,7 +15,7 @@ public class DebugFileLocationCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .requires(source -> source.hasPermissionLevel(2)).then(CommandManager.literal("debug")
+                       .then(CommandManager.literal("debug").requires(Permissions.require("scrubians.debug"))
                         .executes(DebugFileLocationCommand::debug))
         );
     }

@@ -1,7 +1,7 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import com.mojang.brigadier.CommandDispatcher;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -12,9 +12,7 @@ public class NpcHelpCommand {
         dispatcher.register(
                 CommandManager.literal("npc")
                         .then(CommandManager.literal("help")
-                                .requires(source ->
-                                        ScrubiansPermissions.has(source, "scrubians.npc")
-                                )
+                                .requires(Permissions.require("scrubians.npc"))
                                 .executes(context -> execute(context.getSource()))
                         )
         );

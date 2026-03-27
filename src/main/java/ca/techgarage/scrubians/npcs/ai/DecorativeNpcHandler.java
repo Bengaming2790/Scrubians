@@ -90,7 +90,7 @@ public class DecorativeNpcHandler {
      * Tick all decorative NPCs - call this every server tick
      */
     public static void tickDecorativeNpcs(ServerWorld world) {
-        int currentTick = (int) world.getTime();
+        int currentTick = (int) world.getTimeOfDay();
         List<UUID> toRemove = new ArrayList<>();
 
         for (DecorativeNpcData data : DECORATIVE_NPCS.values()) {

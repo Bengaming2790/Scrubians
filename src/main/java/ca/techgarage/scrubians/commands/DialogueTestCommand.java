@@ -5,6 +5,7 @@ import ca.techgarage.scrubians.dialogue.NPCDialogue;
 import ca.techgarage.scrubians.dialogue.DialoguePackets;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,7 +16,7 @@ public class DialogueTestCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("dialoguetest")
-                        .requires(source -> source.hasPermissionLevel(2))
+                        .requires(Permissions.require("scrubians.debug"))
                         .executes(DialogueTestCommand::testDialogue)
         );
     }

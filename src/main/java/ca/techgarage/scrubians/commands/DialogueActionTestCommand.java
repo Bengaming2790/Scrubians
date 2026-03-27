@@ -6,6 +6,7 @@ import ca.techgarage.scrubians.dialogue.NPCDialogue;
 import ca.techgarage.scrubians.dialogue.DialoguePackets;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.command.CommandManager;
@@ -13,12 +14,14 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.security.Permission;
+
 public class DialogueActionTestCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("dialogueactiontest")
-                        .requires(source -> source.hasPermissionLevel(2))
+                        .requires(Permissions.require("scrubians.debug"))
                         .executes(DialogueActionTestCommand::testActions)
         );
     }

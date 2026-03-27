@@ -1,9 +1,9 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -16,7 +16,7 @@ public class NpcRecoveryCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .then(CommandManager.literal("recover").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.recover"))
+                        .then(CommandManager.literal("recover").requires(Permissions.require("scrubians.npc.recover"))
                         .then(CommandManager.literal("list")
                                 .executes(NpcRecoveryCommand::listBackups)
                         )

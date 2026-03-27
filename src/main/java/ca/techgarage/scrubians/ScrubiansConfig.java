@@ -1,25 +1,19 @@
 package ca.techgarage.scrubians;
 
-import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import ca.techgarage.bscm.Comment;
 
-@Config(name = "scrubians")
-public class ScrubiansConfig implements ConfigData {
+public class ScrubiansConfig {
 
-    @ConfigEntry.Gui.Tooltip
-    @ConfigEntry.BoundedDiscrete(min = 1, max = 16)
-    public int NPCLookDistance = 8;
+    @Comment("Distence NPCs will look at you from {int}")
+    public static int NPCLookDistence = 8;
 
-    @ConfigEntry.Gui.Tooltip
-    @ConfigEntry.BoundedDiscrete(min = 8, max = 25)
-    public int NPCHeadSpeed = 10;
+    @Comment("Speed NPC will turn its head {int}")
+    public static int NPCHeadSpeed = 10;
 
-    @ConfigEntry.Gui.Tooltip
-    @ConfigEntry.BoundedDiscrete(min = 0, max = 40)
-    public int defaultNPCWaitTimeInTicks = 20;
+    @Comment("default time NPC will wait for {int [min: 0]}")
+    public static int defaultNPCWaitTimeInTicks = 20;
 
-    @ConfigEntry.Gui.Tooltip
-    public boolean npcHasNothingtoSayMessage = true;
+    @Comment("Display something at all times on right-click")
+    public static boolean npcHasNothingtoSayMessage = true;
 
 }

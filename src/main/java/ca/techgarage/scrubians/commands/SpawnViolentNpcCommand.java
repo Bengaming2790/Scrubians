@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -45,10 +46,8 @@ public class SpawnViolentNpcCommand {
                                 CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .requires(source -> source.hasPermissionLevel(2))
                         .then(CommandManager.literal("violent")
-
-                                // WorldEdit-style selection commands
+                                .requires(Permissions.require("scrubians.npc.create"))
                                 .then(CommandManager.literal("pos1")
                                         .executes(SpawnViolentNpcCommand::setPos1)
                                 )

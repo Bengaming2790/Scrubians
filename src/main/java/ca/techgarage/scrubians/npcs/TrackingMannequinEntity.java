@@ -1,6 +1,7 @@
 package ca.techgarage.scrubians.npcs;
 
 import ca.techgarage.scrubians.Scrubians;
+import ca.techgarage.scrubians.ScrubiansConfig;
 import ca.techgarage.scrubians.dialogue.DialoguePackets;
 import ca.techgarage.scrubians.dialogue.DialogueSessionManager;
 import ca.techgarage.scrubians.dialogue.NPCDialogue;
@@ -26,9 +27,9 @@ import java.util.UUID;
 
 public class TrackingMannequinEntity extends MannequinEntity {
 
-    private static final double LOOK_RANGE = (double) Scrubians.CONFIG.NPCLookDistance;
+    private static final double LOOK_RANGE = (double) ScrubiansConfig.NPCLookDistence;
     private static final float MAX_HEAD_ROTATION = 75.0F;
-    private static final float ROTATION_SPEED = (float) Scrubians.CONFIG.NPCHeadSpeed;
+    private static final float ROTATION_SPEED = (float) ScrubiansConfig.NPCHeadSpeed;
     private static final String NPC_ID_KEY = "npc_id";
 
     // Interaction cooldown tracking
@@ -307,7 +308,7 @@ public class TrackingMannequinEntity extends MannequinEntity {
             NPCDialogue dialogue = createDialogue();
 
             if (dialogue == null || dialogue.getPages().isEmpty()) {
-                if (Scrubians.CONFIG.npcHasNothingtoSayMessage) {
+                if (ScrubiansConfig.npcHasNothingtoSayMessage) {
                     player.sendMessage(net.minecraft.text.Text.literal("§7*" + this.getCustomName().getString() + " has nothing to say*"), false);
                 }
                 return ActionResult.SUCCESS;

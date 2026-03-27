@@ -1,11 +1,11 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.events.ChunkLoadCleanup;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.decoration.MannequinEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -18,7 +18,7 @@ public class CleanupStatsCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                CommandManager.literal("npc").then(CommandManager.literal("cleanupstats").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.cleanup"))
+                CommandManager.literal("npc").then(CommandManager.literal("cleanupstats").requires(Permissions.require("scrubians.debug"))
                         .executes(CleanupStatsCommand::showStats))
         );
     }

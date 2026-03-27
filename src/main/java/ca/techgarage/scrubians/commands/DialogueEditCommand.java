@@ -1,12 +1,12 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.NpcRegistry.DialogueData;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -17,7 +17,7 @@ public class DialogueEditCommand {
         dispatcher.register(
                 CommandManager.literal("npc")
                         .then(CommandManager.literal("edit")
-                                .requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.edit"))
+                                .requires(Permissions.require("scrubians.npc.edit"))
                                 .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0))
                                         .then(CommandManager.literal("dialogue")
                                                 // /npc edit <id> dialogue

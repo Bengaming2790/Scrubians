@@ -1,11 +1,11 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcEntityFactory;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -21,7 +21,7 @@ public class SpawnNpcCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .then(CommandManager.literal("create").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.create")) // Requires OP level 2
+                        .then(CommandManager.literal("create").requires(Permissions.require("scrubians.npc.create")) // Requires OP level 2
 
                             // Just name (uses default Steve skin, not attackable)
                             .then(CommandManager.argument("name", StringArgumentType.string())

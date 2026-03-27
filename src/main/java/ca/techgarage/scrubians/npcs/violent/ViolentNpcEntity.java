@@ -15,6 +15,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
@@ -58,7 +59,7 @@ public class ViolentNpcEntity {
         // Parse the entity type
         Identifier typeId = entityTypeString.contains(":")
                 ? Identifier.tryParse(entityTypeString)
-                : Identifier.ofVanilla(entityTypeString);
+                : Identifier.ofVanilla(entityTypeString.toLowerCase());
 
         EntityType<?> entityType = Registries.ENTITY_TYPE.get(typeId);
 
@@ -78,6 +79,8 @@ public class ViolentNpcEntity {
         }
     }
 
+
+
     /**
      * Check if entity type needs hybrid mode (zombie AI + display entity)
      */
@@ -95,7 +98,7 @@ public class ViolentNpcEntity {
     }
 
     /**
-     * Spawn a hybrid NPC: Invisible zombie for AI riding on visible display entity
+     * Spawn a hybrid NPC: Invisible zombie for AI stacked with visible display entity
      */
     private static Entity spawnHybridNpc(ServerWorld world, int npcId, EntityType<?> displayType,
                                          String displayTypeString, Vec3d spawnPos) {
@@ -122,7 +125,7 @@ public class ViolentNpcEntity {
             return null;
         }
 
-        // Position both at spawn location
+        // Position both at spawn location (stacked on top of each other)
         zombie.refreshPositionAndAngles(spawnPos.x, spawnPos.y, spawnPos.z, 0, 0);
         displayEntity.refreshPositionAndAngles(spawnPos.x, spawnPos.y, spawnPos.z, 0, 0);
 
@@ -153,7 +156,7 @@ public class ViolentNpcEntity {
 
         // Scale zombie down to minimum size
         if (zombie.getAttributeInstance(EntityAttributes.SCALE) != null) {
-            zombie.getAttributeInstance(EntityAttributes.SCALE).setBaseValue(0.0625); // 1/16th size
+            zombie.getAttributeInstance(EntityAttributes.SCALE).setBaseValue(1); // 1/16th size
         }
 
         // Set zombie's name to match the NPC
@@ -193,6 +196,15 @@ public class ViolentNpcEntity {
             // Set display entity health to match zombie
             livingDisplay.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(npcData.stats.health);
             livingDisplay.setHealth((float) npcData.stats.health);
+
+            // For MobEntity, clear all AI goals to prevent movement
+            if (livingDisplay instanceof MobEntity mobDisplay) {
+                // Clear all AI goals so the display entity doesn't move
+                ca.techgarage.scrubians.mixin.MobEntityAccessor accessor =
+                        (ca.techgarage.scrubians.mixin.MobEntityAccessor) mobDisplay;
+                accessor.scrubians$getGoalSelector().clear(goal -> true);
+                accessor.scrubians$getTargetSelector().clear(goal -> true);
+            }
         }
 
         // Make display entity glow if needed
@@ -200,20 +212,24 @@ public class ViolentNpcEntity {
             displayEntity.setGlowing(true);
         }
 
-        // Spawn display entity first (it's the vehicle)
+        // Disable gravity and collision for both entities
+        zombie.setNoGravity(true);
+        displayEntity.setNoGravity(true);
+
+        // Disable collision by making them not push entities
+        zombie.noClip = true;
+        displayEntity.noClip = true;
+
+        // Spawn both entities
         if (!world.spawnEntity(displayEntity)) {
             zombie.discard();
             return null;
         }
 
-        // Spawn zombie second (it's the passenger)
         if (!world.spawnEntity(zombie)) {
             displayEntity.discard();
             return null;
         }
-
-        // Make zombie ride on top of display entity
-        zombie.startRiding(displayEntity);
 
         // Track the relationship
         AI_TO_DISPLAY.put(zombie.getUuid(), displayEntity.getUuid());
@@ -230,7 +246,7 @@ public class ViolentNpcEntity {
         displayNbt.putLong(LINKED_ENTITY_UUID_LEAST_TAG, zombieUuid.getLeastSignificantBits());
         displayEntity.setComponent(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(displayNbt));
 
-        Scrubians.logger("info", "[Scrubians] Successfully spawned hybrid NPC with zombie AI riding display entity");
+        Scrubians.logger("info", "[Scrubians] Successfully spawned hybrid NPC with stacked zombie AI and display entity");
 
         // Return the zombie (AI entity) as the "main" entity for tracking
         return zombie;
@@ -330,6 +346,7 @@ public class ViolentNpcEntity {
         if (entity.getAttributeInstance(EntityAttributes.FOLLOW_RANGE) != null) {
             entity.getAttributeInstance(EntityAttributes.FOLLOW_RANGE).setBaseValue(stats.followRange);
         }
+
     }
 
     /**
@@ -460,16 +477,22 @@ public class ViolentNpcEntity {
             return displayEntity == null || aiEntity == null || !displayEntity.isAlive() || !aiEntity.isAlive();
         });
 
-        // Sync rotations and health for hybrid NPCs
+        // Sync positions, rotations, and health for hybrid NPCs
         for (Map.Entry<UUID, UUID> entry : AI_TO_DISPLAY.entrySet()) {
             Entity aiEntity = world.getEntity(entry.getKey());
             Entity displayEntity = world.getEntity(entry.getValue());
 
-            if (aiEntity != null && displayEntity != null && aiEntity.hasVehicle()) {
+            if (aiEntity != null && displayEntity != null) {
+                // Teleport display entity to AI entity position (stacked on top)
+                displayEntity.setPos(aiEntity.getX(), aiEntity.getY(), aiEntity.getZ());
+
                 // Sync yaw and pitch from zombie to display entity
                 displayEntity.setYaw(aiEntity.getYaw());
                 displayEntity.setPitch(aiEntity.getPitch());
                 displayEntity.setHeadYaw(aiEntity.getHeadYaw());
+
+                // Sync velocity to keep them together
+                displayEntity.setVelocity(aiEntity.getVelocity());
 
                 // Sync health bidirectionally between zombie and display entity
                 if (aiEntity instanceof LivingEntity livingAi && displayEntity instanceof LivingEntity livingDisplay) {

@@ -1,10 +1,10 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.NpcRegistry;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
@@ -22,7 +22,7 @@ public class NpcDiagnoseCommand {
                         .then(
                                 CommandManager.literal("diagnose")
                                         .executes(NpcDiagnoseCommand::diagnose)
-                        ).requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.diagnose")) // Requires OP level 2
+                        ).requires(Permissions.require("scrubians.npc")) // Requires OP level 2
         );
     }
 

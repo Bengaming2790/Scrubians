@@ -17,9 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Registry for Violent NPCs - hostile entities with custom stats
- */
+
 public final class ViolentNpcRegistry {
 
     private static final List<ViolentNpcData> NPC_LIST = new ArrayList<>();
@@ -45,10 +43,10 @@ public final class ViolentNpcRegistry {
         /**
          * Instantiates a new Violent npc data.
          *
-         * @param id         the id
-         * @param name       the name
-         * @param entityType the entity type
-         * @param spawnArea  the spawn area
+         * @param id
+         * @param name
+         * @param entityType
+         * @param spawnArea
          */
         public ViolentNpcData(int id, String name, String entityType, SpawnArea spawnArea) {
             this.id = id;
@@ -73,7 +71,7 @@ public final class ViolentNpcRegistry {
             } catch (Exception e) {
                 Scrubians.logger("error","[Scrubians] Invalid entity type: " + entityType);
             }
-            return EntityType.ZOMBIE; // Fallback
+            return EntityType.ZOMBIE;
         }
     }
 
@@ -83,7 +81,7 @@ public final class ViolentNpcRegistry {
     public static class SpawnArea {
         public double minX, minY, minZ;
         public double maxX, maxY, maxZ;
-        public int maxCount; // Maximum number of this NPC that can exist at once
+        public int maxCount;
         public int respawnDelayTicks; // Ticks before respawning (20 = 1 second)
 
         /**
@@ -97,10 +95,10 @@ public final class ViolentNpcRegistry {
         /**
          * Instantiates a new Spawn area.
          *
-         * @param corner1           the corner 1
-         * @param corner2           the corner 2
-         * @param maxCount          the max count
-         * @param respawnDelayTicks the respawn delay ticks
+         * @param corner1
+         * @param corner2
+         * @param maxCount
+         * @param respawnDelayTicks
          */
         public SpawnArea(Vec3d corner1, Vec3d corner2, int maxCount, int respawnDelayTicks) {
             this.minX = Math.min(corner1.x, corner2.x);
@@ -164,11 +162,11 @@ public final class ViolentNpcRegistry {
         /**
          * Instantiates a new Stats.
          *
-         * @param health              the health
-         * @param attackDamage        the attack damage
-         * @param speed               the speed
-         * @param knockbackResistance the knockback resistance
-         * @param followRange         the follow range
+         * @param health
+         * @param attackDamage
+         * @param speed
+         * @param knockbackResistance
+         * @param followRange
          */
         public Stats(double health, double attackDamage, double speed, double knockbackResistance, double followRange) {
             this.health = health;
@@ -181,9 +179,7 @@ public final class ViolentNpcRegistry {
     }
 
     /**
-     * Init.
-     *
-     * @param serverRoot the server root
+     * @param serverRoot
      */
     public static void init(File serverRoot) {
         File scrubiansFolder = new File(serverRoot, ".scrubians");
@@ -243,10 +239,10 @@ public final class ViolentNpcRegistry {
     /**
      * Register npc int.
      *
-     * @param name       the name
-     * @param entityType the entity type
-     * @param spawnArea  the spawn area
-     * @return the int
+     * @param name
+     * @param entityType
+     * @param spawnArea
+     * @return  id
      */
     public static int registerNpc(String name, String entityType, SpawnArea spawnArea) {
         int id = NEXT_ID++;
@@ -285,8 +281,8 @@ public final class ViolentNpcRegistry {
     /**
      * Sets spawn area.
      *
-     * @param id   the id
-     * @param area the area
+     * @param id
+     * @param area
      */
     public static void setSpawnArea(int id, SpawnArea area) {
         for (ViolentNpcData npc : NPC_LIST) {
@@ -301,8 +297,8 @@ public final class ViolentNpcRegistry {
     /**
      * Sets persistent.
      *
-     * @param id         the id
-     * @param persistent the persistent
+     * @param id
+     * @param persistent
      */
     public static void setPersistent(int id, boolean persistent) {
         for (ViolentNpcData npc : NPC_LIST) {
@@ -338,8 +334,6 @@ public final class ViolentNpcRegistry {
     }
 
     /**
-     * Gets all npcs.
-     *
      * @return the all npcs
      */
     public static List<ViolentNpcData> getAllNpcs() {
@@ -347,8 +341,6 @@ public final class ViolentNpcRegistry {
     }
 
     /**
-     * Gets npc by id.
-     *
      * @param id the id
      * @return the npc by id
      */

@@ -1,5 +1,6 @@
 package ca.techgarage.scrubians;
 
+import ca.techgarage.bscm.Bscm;
 import ca.techgarage.scrubians.commands.*;
 import ca.techgarage.scrubians.dialogue.DialogueActionCommand;
 import ca.techgarage.scrubians.events.ChunkLoadCleanup;
@@ -29,11 +30,12 @@ import static ca.techgarage.scrubians.commands.NpcRespawnCommand.respawnAllOnSer
 
 public class Scrubians implements ModInitializer {
 
-    public static ScrubiansConfig CONFIG;
     public static final String MOD_ID = "scrubians";
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    public static final boolean DEVELOPER_MODE = false;
+    public static final boolean DEVELOPER_MODE = true;
     private static int cleanupTickCounter = 0;
+    private static int respawnTickCounter = -60;
+
     private static boolean hasSpawnedNPCsOnStartup = false;
 
     @Override
@@ -58,11 +60,10 @@ public class Scrubians implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcRemoveCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> NpcReloadCommand.register(dispatcher));
 
-        AutoConfig.register(ScrubiansConfig.class, GsonConfigSerializer::new);
-        CONFIG = AutoConfig.getConfigHolder(ScrubiansConfig.class).getConfig();
 
         ViolentNpcEntityRegistration.register();
 
+        Bscm.load(ScrubiansConfig.class, "scrubians");
 
             logger("warning", "[Scrubians] Developer mode is ON - Initializing unreleased features.");
             CommandRegistrationCallback.EVENT.register(SpawnViolentNpcCommand::register);
@@ -113,7 +114,13 @@ public class Scrubians implements ModInitializer {
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             cleanupTickCounter++;
-
+            respawnTickCounter++;
+            if (respawnTickCounter >= 20 ) {
+                respawnTickCounter = 0;
+                for (ServerWorld world : server.getWorlds()) {
+                    NpcRespawnCommand.serverRespawnAll(world);
+                }
+            }
             // Run cleanup every 2 seconds (40 ticks)
             if (cleanupTickCounter >= 40) {
                 cleanupTickCounter = 0;
@@ -169,7 +176,4 @@ public class Scrubians implements ModInitializer {
         LOGGER.info(log);
     }
 
-    public static ScrubiansConfig getConfig() {
-        return CONFIG;
-    }
 }

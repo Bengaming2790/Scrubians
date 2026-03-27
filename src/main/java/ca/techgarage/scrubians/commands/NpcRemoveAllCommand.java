@@ -1,9 +1,9 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
@@ -21,7 +21,7 @@ public class NpcRemoveAllCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 CommandManager.literal("npc")
-                        .then(CommandManager.literal("removeall").requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.removeall"))
+                        .then(CommandManager.literal("removeall").requires(Permissions.require("scrubians.debug"))
                         .executes(NpcRemoveAllCommand::removeAll))
         );
     }

@@ -1,13 +1,13 @@
 package ca.techgarage.scrubians.commands;
 
 import ca.techgarage.scrubians.Scrubians;
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.MannequinEntity;
 import net.minecraft.server.command.CommandManager;
@@ -27,7 +27,7 @@ public class NpcReloadCommand {
         dispatcher.register(
                 CommandManager.literal("npc")
                         .then(CommandManager.literal("reload")
-                                .requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.reload"))
+                                .requires(Permissions.require("scrubians.npc"))
                                 .executes(NpcReloadCommand::execute))
         );
     }

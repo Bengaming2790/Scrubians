@@ -15,7 +15,6 @@ Scrubians introduces **three planned NPC types**:
 |--------|--------|-------------|
 | **Standard NPCs** | ✅ Completed | Passive, interactive NPCs using mannequins |
 | **Violent NPCs** | 🚧 In Progress | Hostile NPCs that attack players in a defined area |
-| **Boss NPCs** | ❌ Not Started | Powerful single NPCs with boss mechanics |
 
 ---
 ## **Commands**
@@ -62,19 +61,6 @@ Violent NPCs are **hostile entities** intended for combat encounters.
   - Quantity
 - Can use **any entity type except mannequins**
   - Mannequin support planned for later
-
----
-
-## **Boss NPCs (Planned)**
-
-Boss NPCs will combine mechanics from **Standard** and **Violent** NPCs.
-
-### **Planned Features**
-- Only **one boss instance** spawned at a time
-- Hostile combat behavior
-- Boss health bar
-- Custom stats and behaviors
-- Persistent boss data
 
 ---
 

@@ -1,7 +1,6 @@
 package ca.techgarage.scrubians.commands;
 
 import ca.techgarage.scrubians.Scrubians;
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -9,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -24,7 +24,7 @@ public class NpcRemoveCommand {
         dispatcher.register(
                 CommandManager.literal("npc")
                         .then(CommandManager.literal("delete")
-                                .requires(source -> ScrubiansPermissions.has(source, "scrubians.npc.delete"))
+                                .requires(Permissions.require("scrubians.npc.delete"))
                                 .then(CommandManager.argument("npcId", IntegerArgumentType.integer(0))
                                         .executes(NpcRemoveCommand::execute)))
         );

@@ -201,7 +201,7 @@ public class ViolentNpcTracker {
         }
 
         // Periodic spawn verification
-        if (world.getTime() % 100 == 0) {
+        if (world.getTimeOfDay() % 100 == 0) {
             for (var npcData : ViolentNpcRegistry.getAllNpcs()) {
                 if (npcData.spawnArea == null) continue;
                 if (RESPAWN_TIMERS.containsKey(npcData.id)) continue;
@@ -216,7 +216,7 @@ public class ViolentNpcTracker {
         }
 
         // Cleanup
-        if (world.getTime() % 40 == 0) {
+        if (world.getTimeOfDay() % 40 == 0) {
             cleanupDeadEntities(world);
         }
     }

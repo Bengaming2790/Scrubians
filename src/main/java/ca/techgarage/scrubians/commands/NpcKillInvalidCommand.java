@@ -1,8 +1,8 @@
 package ca.techgarage.scrubians.commands;
 
-import ca.techgarage.scrubians.ScrubiansPermissions;
 import ca.techgarage.scrubians.npcs.TrackingMannequinEntity;
 import com.mojang.brigadier.CommandDispatcher;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.MannequinEntity;
 import net.minecraft.server.command.ServerCommandSource;
@@ -15,7 +15,7 @@ public class NpcKillInvalidCommand {
         dispatcher.register(
                 net.minecraft.server.command.CommandManager.literal("npc")
                         .then(net.minecraft.server.command.CommandManager.literal("killInvalid")
-                                .requires(src -> ScrubiansPermissions.has(src, "scrubians.npc.killinvalid"))
+                                .requires(Permissions.require("scrubians.debug"))
                                 .executes(ctx -> execute(ctx.getSource()))
                         )
         );
