@@ -29,11 +29,14 @@ fabricApi {
 
 repositories {
     maven { url 'https://maven.nucleoid.xyz' }
-    maven { url 'https://maven.shedaniel.me/' }
     maven { url = "https://jitpack.io" }
     maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
+    }
+    maven {
+        name = "Terraformers"
+        url = "https://maven.terraformersmc.com/"
     }
 }
 
@@ -45,15 +48,11 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modCompileOnly "net.luckperms:api:5.4"
     modImplementation include("eu.pb4:sgui:1.11.0+1.21.9")
-    modImplementation "maven.modrinth:bscm:1.0.0"
+    modImplementation "maven.modrinth:bscm:1.0.1"
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 
     include(modImplementation('me.lucko:fabric-permissions-api:0.6.1'))
 
-    // Add Cloth Config for MC 1.21.10
-    modImplementation("me.shedaniel.cloth:cloth-config-fabric:20.0.149") {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
-    include("me.shedaniel.cloth:cloth-config-fabric:20.0.149")
 }
 
 
